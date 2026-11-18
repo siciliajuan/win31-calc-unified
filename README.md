@@ -1,8 +1,20 @@
 # win31-calc95
 
-A Windows 95-style calculator for **Windows 3.1**, written in C as a native 16-bit (Win16) application.
+**The Windows 95 calculator look, on Windows 3.1.**
+A native 16-bit (Win16) calculator written in C that brings the 1995 interface back to 1992, ready for real 486 hardware.
 
-The window frame and menu bar are drawn by Windows 3.1 itself. The client area is custom-painted to look like the Windows 95 calculator: 3D bevelled buttons, MS Sans Serif 8 pt, and colored key labels. Everything uses the standard 16-color VGA palette, so it looks the same on a plain VGA card.
+<p align="center">
+  <img src="docs/standard-en-es.png" alt="Standard mode in English and Spanish: a grey calculator with bevelled 3D buttons, blue digits and red operators, inside a Windows 3.1 window frame" width="640">
+  <br>
+  <sub>Mockup of phase 1 (Standard mode). Screenshots from real hardware coming soon.</sub>
+</p>
+
+### Highlights
+
+- **Windows 95 look, inside Windows 3.1.** Windows 3.1 draws the window frame and menu bar. The client area is custom-painted: 3D bevelled buttons, MS Sans Serif 8 pt, and blue/red/navy key labels.
+- **VGA-friendly.** Only the 16 standard VGA colors are used, so it looks right on a plain VGA card without a 256-color driver.
+- **Speaks your language.** English by default, Spanish when Windows is set to Spanish. The decimal separator follows the regional settings.
+- **Small and dependency-free.** One ~32 KB executable that needs no math coprocessor and imports only system DLLs.
 
 ## Status
 
