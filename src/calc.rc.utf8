@@ -1,0 +1,60 @@
+/* calc.rc - resources (converted to Windows-1252 before compiling) */
+#include <windows.h>
+#include "resource.h"
+
+CALC ICON calc.ico
+
+MENU_EN MENU
+BEGIN
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Copy\tCtrl+C",  IDM_COPY
+        MENUITEM "&Paste\tCtrl+V", IDM_PASTE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "S&tandard",   IDM_STANDARD, CHECKED
+        MENUITEM "&Scientific", IDM_SCIENTIFIC, GRAYED
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About Calculator", IDM_ABOUT
+    END
+END
+
+MENU_ES MENU
+BEGIN
+    POPUP "&Edición"
+    BEGIN
+        MENUITEM "&Copiar\tCtrl+C", IDM_COPY
+        MENUITEM "&Pegar\tCtrl+V",  IDM_PASTE
+    END
+    POPUP "&Ver"
+    BEGIN
+        MENUITEM "&Estándar",   IDM_STANDARD, CHECKED
+        MENUITEM "&Científica", IDM_SCIENTIFIC, GRAYED
+    END
+    POPUP "&Ayuda"
+    BEGIN
+        MENUITEM "&Acerca de Calculadora", IDM_ABOUT
+    END
+END
+
+STRINGTABLE
+BEGIN
+    STR_BASE_EN + IDS_TITLE,       "Calculator"
+    STR_BASE_EN + IDS_BACKSPACE,   "Backspace"
+    STR_BASE_EN + IDS_ERR_DIVZERO, "Cannot divide by zero."
+    STR_BASE_EN + IDS_ERR_INVALID, "Invalid input for function."
+    STR_BASE_EN + IDS_ERR_OVERFLW, "Overflow."
+    STR_BASE_EN + IDS_ABOUT_TITLE, "About Calculator"
+    STR_BASE_EN + IDS_ABOUT_TEXT,  "Windows 95-style Calculator for Windows 3.1\nVersion 0.1 (phase 1: Standard)"
+
+    STR_BASE_ES + IDS_TITLE,       "Calculadora"
+    STR_BASE_ES + IDS_BACKSPACE,   "Retroceso"
+    STR_BASE_ES + IDS_ERR_DIVZERO, "No se puede dividir entre cero."
+    STR_BASE_ES + IDS_ERR_INVALID, "Entrada no válida para la función."
+    STR_BASE_ES + IDS_ERR_OVERFLW, "Desbordamiento."
+    STR_BASE_ES + IDS_ABOUT_TITLE, "Acerca de Calculadora"
+    STR_BASE_ES + IDS_ABOUT_TEXT,  "Calculadora estilo Windows 95 para Windows 3.1\nVersión 0.1 (fase 1: Estándar)"
+END
