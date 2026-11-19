@@ -77,7 +77,6 @@ static Button buttons[] = {
 
 static const RECT rcDisplay = { X0, 20, X0 + 248, 46 };
 static const RECT rcMemBox  = { X0, 52, X0 + 36, 78 };
-#define ETCH_Y 5   /* etched separator under the menu bar */
 
 /* ---------- Global state ---------- */
 static HINSTANCE  g_hInst;
@@ -304,8 +303,6 @@ static void Paint(HWND hwnd)
         FillRect(hdc, &ps.rcPaint, br);
         DeleteObject(br);
     }
-    FillSolid(hdc, 0, ETCH_Y, rc.right, 1, C_SHADOW);
-    FillSolid(hdc, 0, ETCH_Y + 1, rc.right, 1, C_LIGHT);
     DrawDisplay(hdc);
     DrawMemBox(hdc);
     SelectObject(hdc, g_btnFont);
