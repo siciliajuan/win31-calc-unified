@@ -9,6 +9,7 @@
  */
 #include <windows.h>
 #include <shellapi.h>
+#include <stdio.h>
 #include <string.h>
 #include "engine.h"
 #include "resource.h"
@@ -79,6 +80,8 @@ static HFONT      g_font;
 static int        g_strBase = STR_BASE_EN;
 static char       g_dec = '.';
 static char       g_decLabel[2] = ".";
+static char       g_thousand = ',';
+static HICON      g_appIcon;
 static char       g_backLabel[24];
 static int        g_pressed = -1;     /* index of the button pressed with the mouse */
 static int        g_pressedIn = 0;    /* the cursor is still over it */
@@ -122,6 +125,89 @@ static void DetectLocale(void)
     GetProfileString("intl", "sDecimal", ".", buf, sizeof(buf));
     g_dec = buf[0] ? buf[0] : '.';
     g_decLabel[0] = g_dec;
+    GetProfileString("intl", "sThousand", ",", buf, sizeof(buf));
+    g_thousand = buf[0] ? buf[0] : ',';
+}
+
+/* ---------- About box ---------- */
+
+/* 49053 -> "49.053" using the regional thousands separator */
+static void FormatThousands(unsigned long n, char *out)
+{
+    char tmp[16];
+    int len, i, j = 0;
+    sprintf(tmp, "%lu", n);
+    len = strlen(tmp);
+    for (i = 0; i < len; i++) {
+        out[j++] = tmp[i];
+        if ((len - i - 1) > 0 && (len - i - 1) % 3 == 0) out[j++] = g_thousand;
+    }
+    out[j] = '\0';
+}
+
+static void SetDlgStr(HWND dlg, int ctl, int ids)
+{
+    char buf[128];
+    LoadStr(ids, buf, sizeof(buf));
+    SetDlgItemText(dlg, ctl, buf);
+}
+
+BOOL CALLBACK __export AboutProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+    char fmt[48], num[24], buf[64];
+    (void)lp;
+
+    switch (msg) {
+    case WM_INITDIALOG:
+        LoadStr(IDS_ABOUT_TITLE, buf, sizeof(buf));
+        SetWindowText(dlg, buf);
+        SetDlgStr(dlg, IDOK, IDS_OK);
+        SetDlgStr(dlg, IDC_LINE1, IDS_ABOUT_L1);
+        SetDlgStr(dlg, IDC_LINE2, IDS_ABOUT_L2);
+        SetDlgStr(dlg, IDC_LINE3, IDS_ABOUT_L3);
+        SetDlgStr(dlg, IDC_LINE4, IDS_ABOUT_L4);
+        SetDlgStr(dlg, IDC_LINE5, IDS_ABOUT_L5);
+        SetDlgStr(dlg, IDC_MODE,
+                  (GetWinFlags() & WF_ENHANCED) ? IDS_MODE_ENH : IDS_MODE_STD);
+        SetDlgStr(dlg, IDC_MEMLBL, IDS_MEM_LABEL);
+        SetDlgStr(dlg, IDC_RESLBL, IDS_RES_LABEL);
+
+        LoadStr(IDS_MEM_FMT, fmt, sizeof(fmt));
+        FormatThousands(GetFreeSpace(0) / 1024UL, num);
+        sprintf(buf, fmt, num);
+        SetDlgItemText(dlg, IDC_MEM, buf);
+
+        LoadStr(IDS_RES_FMT, fmt, sizeof(fmt));
+        sprintf(buf, fmt, GetFreeSystemResources(GFSR_SYSTEMRESOURCES));
+        SetDlgItemText(dlg, IDC_RES, buf);
+        return TRUE;
+
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        RECT r;
+        HDC hdc = BeginPaint(dlg, &ps);
+        GetWindowRect(GetDlgItem(dlg, IDC_ICONPOS), &r);
+        ScreenToClient(dlg, (POINT FAR *)&r);
+        DrawIcon(hdc, r.left, r.top, g_appIcon);
+        EndPaint(dlg, &ps);
+        return TRUE;
+    }
+
+    case WM_COMMAND:
+        if (wp == IDOK || wp == IDCANCEL) {
+            EndDialog(dlg, 0);
+            return TRUE;
+        }
+        break;
+    }
+    return FALSE;
+}
+
+static void ShowAbout(HWND hwnd)
+{
+    FARPROC proc = MakeProcInstance((FARPROC)AboutProc, g_hInst);
+    DialogBox(g_hInst, "ABOUTBOX", hwnd, (DLGPROC)proc);
+    FreeProcInstance(proc);
 }
 
 /* ---------- Drawing ---------- */
@@ -405,14 +491,14 @@ LRESULT CALLBACK __export WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         switch (wp) {
         case IDM_COPY:  CopyDisplay(hwnd); break;
         case IDM_PASTE: PasteText(hwnd); break;
-        case IDM_ABOUT: {
-            char title[64], text[160];
-            LoadStr(IDS_ABOUT_TITLE, title, sizeof(title));
-            LoadStr(IDS_ABOUT_TEXT, text, sizeof(text));
-            MessageBox(hwnd, text, title, MB_OK | MB_ICONINFORMATION);
-            break;
+        case IDM_ABOUT: ShowAbout(hwnd); break;
         }
-        }
+        return 0;
+
+    case WM_INITMENUPOPUP:
+        /* Gray out Paste when there is no text on the clipboard */
+        EnableMenuItem((HMENU)wp, IDM_PASTE, MF_BYCOMMAND |
+                       (IsClipboardFormatAvailable(CF_TEXT) ? MF_ENABLED : MF_GRAYED));
         return 0;
 
     case WM_DESTROY:
@@ -445,7 +531,7 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
         wc.cbClsExtra = 0;
         wc.cbWndExtra = 0;
         wc.hInstance = hInst;
-        wc.hIcon = LoadAppIcon(hInst);
+        wc.hIcon = g_appIcon = LoadAppIcon(hInst);
         wc.hCursor = LoadCursor(NULL, IDC_ARROW);
         wc.hbrBackground = NULL;
         wc.lpszMenuName = NULL;

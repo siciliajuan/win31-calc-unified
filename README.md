@@ -30,7 +30,7 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
   - chained left-to-right evaluation and repeatable `=`;
   - `%` relative to the accumulator;
   - `sqrt` and `1/x`;
-  - Backspace, CE and C;
+  - Back (backspace), CE and C;
   - MC/MR/MS/M+ memory with an "M" indicator.
 - Mouse buttons that stay pressed while held. Full keyboard support.
 - Copy and paste through the clipboard (`Ctrl+C` / `Ctrl+V`).
