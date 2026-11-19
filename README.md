@@ -4,9 +4,9 @@
 A native 16-bit (Win16) calculator written in C that brings the 1995 interface back to 1992, ready for real 486 hardware.
 
 <p align="center">
-  <img src="docs/standard-en-es.png" alt="Standard mode in English and Spanish: a grey calculator with bevelled 3D buttons, blue digits and red operators, inside a Windows 3.1 window frame" width="640">
+  <img src="docs/screenshot-en-es.png" alt="The calculator in English and in Spanish on Windows 3.1: a grey Windows 95-style keypad with bold blue digits, red operators and maroon Back/CE/C keys, inside a native Windows 3.1 window" width="560">
   <br>
-  <sub>Mockup of phase 1 (Standard mode). Screenshots from real hardware coming soon.</sub>
+  <sub>Right: captured on a real 486 running Windows 3.1 in Spanish. Left: the same capture with the English UI texts.</sub>
 </p>
 
 ### Highlights
@@ -20,7 +20,7 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
 
 | Phase | Scope | State |
 |---|---|---|
-| 1 | Standard mode, English/Spanish localization | Done, awaiting tests on real hardware |
+| 1 | Standard mode, English/Spanish localization | Done, tested on a real 486 |
 | 2 | Scientific mode | Planned |
 | 3 | Windows 3.x–style setup floppy (1.44 MB image) | Planned |
 
