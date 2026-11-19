@@ -47,19 +47,18 @@ CAPTION ""
 FONT 8, "Helv"
 BEGIN
     DEFPUSHBUTTON "OK", IDOK, 208, 8, 44, 14
-    LTEXT "", IDC_ICONPOS, 10, 10, 20, 20, NOT WS_VISIBLE
-    LTEXT "", IDC_LINE1,   40,  8, 165, 8
-    LTEXT "", IDC_LINE2,   40, 18, 165, 8
-    LTEXT "", IDC_LINE3,   40, 30, 215, 8
-    LTEXT "", IDC_LINE4,   40, 40, 215, 16
-    CONTROL "", -1, "Static", SS_BLACKRECT, 40, 60, 212, 1
-    LTEXT "", IDC_LINE5,   40, 64, 215, 16
-    CONTROL "", -1, "Static", SS_BLACKRECT, 40, 84, 212, 1
-    LTEXT "", IDC_MODE,    40, 90, 210, 8
-    LTEXT "", IDC_MEMLBL,  40, 100, 80, 8
-    LTEXT "", IDC_MEM,    125, 100, 120, 8
-    LTEXT "", IDC_RESLBL,  40, 110, 80, 8
-    LTEXT "", IDC_RES,    125, 110, 120, 8
+    LTEXT "", IDC_LINE1,   10,  8, 194, 8
+    LTEXT "", IDC_LINE2,   10, 18, 194, 8
+    LTEXT "", IDC_LINE3,   10, 30, 242, 8
+    LTEXT "", IDC_LINE4,   10, 40, 242, 16
+    CONTROL "", -1, "Static", SS_BLACKRECT, 10, 60, 242, 1
+    LTEXT "", IDC_LINE5,   10, 64, 242, 16
+    CONTROL "", -1, "Static", SS_BLACKRECT, 10, 84, 242, 1
+    LTEXT "", IDC_MODE,    10, 90, 242, 8
+    LTEXT "", IDC_MEMLBL,  10, 100, 85, 8
+    LTEXT "", IDC_MEM,     95, 100, 157, 8
+    LTEXT "", IDC_RESLBL,  10, 110, 85, 8
+    LTEXT "", IDC_RES,     95, 110, 157, 8
 END
 
 STRINGTABLE

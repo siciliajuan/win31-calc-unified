@@ -22,10 +22,15 @@
 #define C_RED     RGB(255,0,0)
 #define C_BLUE    RGB(0,0,255)
 #define C_NAVY    RGB(0,0,128)
+#define C_MAROON  RGB(128,0,0)
 
 /* ---------- Geometry (pixels, VGA at 96 dpi) ---------- */
-#define CLIENT_W 254
-#define CLIENT_H 206
+/* Measured against a Windows 95 Calculator screenshot (96 dpi):
+ * 9 px left / 11 px right / 12 px bottom padding, 36x28 keys on a
+ * 40 x 34 px grid, Back/CE/C at 48-49 px wide. */
+#define CLIENT_W 268
+#define CLIENT_H 228
+#define X0 9
 
 typedef struct {
     int key;
@@ -35,53 +40,54 @@ typedef struct {
 } Button;
 
 static Button buttons[] = {
-    { K_BACK,   54, 36, 62, 28, NULL,   C_RED },
-    { K_CE,    120, 36, 62, 28, "CE",   C_RED },
-    { K_C,     186, 36, 62, 28, "C",    C_RED },
+    { K_BACK,  X0+ 93,  52, 48, 28, NULL,   C_MAROON },
+    { K_CE,    X0+146,  52, 48, 28, "CE",   C_MAROON },
+    { K_C,     X0+199,  52, 49, 28, "C",    C_MAROON },
 
-    { K_MC,      6,  72, 36, 29, "MC", C_RED },
-    { K_MR,      6, 105, 36, 29, "MR", C_RED },
-    { K_MS,      6, 138, 36, 29, "MS", C_RED },
-    { K_MPLUS,   6, 171, 36, 29, "M+", C_RED },
+    { K_MC,    X0,      86, 36, 28, "MC",   C_RED },
+    { K_MR,    X0,     120, 36, 28, "MR",   C_RED },
+    { K_MS,    X0,     154, 36, 28, "MS",   C_RED },
+    { K_MPLUS, X0,     188, 36, 28, "M+",   C_RED },
 
-    { K_7,      52,  72, 36, 29, "7",    C_BLUE },
-    { K_8,      92,  72, 36, 29, "8",    C_BLUE },
-    { K_9,     132,  72, 36, 29, "9",    C_BLUE },
-    { K_DIV,   172,  72, 36, 29, "/",    C_RED  },
-    { K_SQRT,  212,  72, 36, 29, "sqrt", C_NAVY },
+    { K_7,      X0+ 52,  86, 36, 28, "7",    C_BLUE },
+    { K_8,      X0+ 92,  86, 36, 28, "8",    C_BLUE },
+    { K_9,      X0+132,  86, 36, 28, "9",    C_BLUE },
+    { K_DIV,    X0+172,  86, 36, 28, "/",    C_RED  },
+    { K_SQRT,   X0+212,  86, 36, 28, "sqrt", C_NAVY },
 
-    { K_4,      52, 105, 36, 29, "4",    C_BLUE },
-    { K_5,      92, 105, 36, 29, "5",    C_BLUE },
-    { K_6,     132, 105, 36, 29, "6",    C_BLUE },
-    { K_MUL,   172, 105, 36, 29, "*",    C_RED  },
-    { K_PERCENT,212,105, 36, 29, "%",    C_NAVY },
+    { K_4,      X0+ 52, 120, 36, 28, "4",    C_BLUE },
+    { K_5,      X0+ 92, 120, 36, 28, "5",    C_BLUE },
+    { K_6,      X0+132, 120, 36, 28, "6",    C_BLUE },
+    { K_MUL,    X0+172, 120, 36, 28, "*",    C_RED  },
+    { K_PERCENT,X0+212, 120, 36, 28, "%",    C_NAVY },
 
-    { K_1,      52, 138, 36, 29, "1",    C_BLUE },
-    { K_2,      92, 138, 36, 29, "2",    C_BLUE },
-    { K_3,     132, 138, 36, 29, "3",    C_BLUE },
-    { K_SUB,   172, 138, 36, 29, "-",    C_RED  },
-    { K_RECIP, 212, 138, 36, 29, "1/x",  C_NAVY },
+    { K_1,      X0+ 52, 154, 36, 28, "1",    C_BLUE },
+    { K_2,      X0+ 92, 154, 36, 28, "2",    C_BLUE },
+    { K_3,      X0+132, 154, 36, 28, "3",    C_BLUE },
+    { K_SUB,    X0+172, 154, 36, 28, "-",    C_RED  },
+    { K_RECIP,  X0+212, 154, 36, 28, "1/x",  C_NAVY },
 
-    { K_0,      52, 171, 36, 29, "0",    C_BLUE },
-    { K_NEGATE, 92, 171, 36, 29, "+/-",  C_BLUE },
-    { K_DECIMAL,132,171, 36, 29, NULL,   C_BLUE },  /* decimal separator */
-    { K_ADD,   172, 171, 36, 29, "+",    C_RED  },
-    { K_EQUALS,212, 171, 36, 29, "=",    C_RED  },
+    { K_0,      X0+ 52, 188, 36, 28, "0",    C_BLUE },
+    { K_NEGATE, X0+ 92, 188, 36, 28, "+/-",  C_BLUE },
+    { K_DECIMAL,X0+132, 188, 36, 28, NULL,   C_BLUE },  /* decimal separator */
+    { K_ADD,    X0+172, 188, 36, 28, "+",    C_RED  },
+    { K_EQUALS, X0+212, 188, 36, 28, "=",    C_RED  },
 };
 #define NBUTTONS (sizeof(buttons) / sizeof(buttons[0]))
 
-static const RECT rcDisplay = { 6, 6, 248, 28 };
-static const RECT rcMemBox  = { 6, 37, 36, 63 };
+static const RECT rcDisplay = { X0, 20, X0 + 248, 46 };
+static const RECT rcMemBox  = { X0, 52, X0 + 36, 78 };
+#define ETCH_Y 5   /* etched separator under the menu bar */
 
 /* ---------- Global state ---------- */
 static HINSTANCE  g_hInst;
 static CalcEngine g_eng;
-static HFONT      g_font;
+static HFONT      g_font;      /* display: MS Sans Serif 8 pt */
+static HFONT      g_btnFont;   /* keys: MS Sans Serif 10 pt bold */
 static int        g_strBase = STR_BASE_EN;
 static char       g_dec = '.';
 static char       g_decLabel[2] = ".";
 static char       g_thousand = ',';
-static HICON      g_appIcon;
 static char       g_backLabel[24];
 static int        g_pressed = -1;     /* index of the button pressed with the mouse */
 static int        g_pressedIn = 0;    /* the cursor is still over it */
@@ -182,17 +188,6 @@ BOOL CALLBACK __export AboutProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         SetDlgItemText(dlg, IDC_RES, buf);
         return TRUE;
 
-    case WM_PAINT: {
-        PAINTSTRUCT ps;
-        RECT r;
-        HDC hdc = BeginPaint(dlg, &ps);
-        GetWindowRect(GetDlgItem(dlg, IDC_ICONPOS), &r);
-        ScreenToClient(dlg, (POINT FAR *)&r);
-        DrawIcon(hdc, r.left, r.top, g_appIcon);
-        EndPaint(dlg, &ps);
-        return TRUE;
-    }
-
     case WM_COMMAND:
         if (wp == IDOK || wp == IDCANCEL) {
             EndDialog(dlg, 0);
@@ -277,7 +272,7 @@ static void DrawDisplay(HDC hdc)
         eng_display(&g_eng, g_dec, text, sizeof(text));
     }
     Sunken(hdc, &rcDisplay, C_LIGHT);
-    r.right -= 6;
+    r.right -= 8;
     SetTextColor(hdc, C_DARK);
     DrawText(hdc, text, -1, &r, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 }
@@ -309,8 +304,11 @@ static void Paint(HWND hwnd)
         FillRect(hdc, &ps.rcPaint, br);
         DeleteObject(br);
     }
+    FillSolid(hdc, 0, ETCH_Y, rc.right, 1, C_SHADOW);
+    FillSolid(hdc, 0, ETCH_Y + 1, rc.right, 1, C_LIGHT);
     DrawDisplay(hdc);
     DrawMemBox(hdc);
+    SelectObject(hdc, g_btnFont);
     for (i = 0; i < NBUTTONS; i++) {
         RECT br;
         br.left = buttons[i].x; br.top = buttons[i].y;
@@ -513,7 +511,6 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
     WNDCLASS wc;
     HWND hwnd;
     MSG m;
-    HDC hdc;
     RECT r;
     char title[48];
     DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
@@ -531,7 +528,7 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
         wc.cbClsExtra = 0;
         wc.cbWndExtra = 0;
         wc.hInstance = hInst;
-        wc.hIcon = g_appIcon = LoadAppIcon(hInst);
+        wc.hIcon = LoadAppIcon(hInst);
         wc.hCursor = LoadCursor(NULL, IDC_ARROW);
         wc.hbrBackground = NULL;
         wc.lpszMenuName = NULL;
@@ -539,12 +536,16 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
         if (!RegisterClass(&wc)) return 0;
     }
 
-    hdc = GetDC(NULL);
-    g_font = CreateFont(-MulDiv(8, GetDeviceCaps(hdc, LOGPIXELSY), 72), 0, 0, 0,
+    /* Fixed pixel sizes (8 pt / 10 pt at 96 dpi) so the layout does not
+     * depend on the display driver's font size setting. */
+    g_font = CreateFont(-11, 0, 0, 0,
                         FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
                         CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                         VARIABLE_PITCH | FF_SWISS, "MS Sans Serif");
-    ReleaseDC(NULL, hdc);
+    g_btnFont = CreateFont(-13, 0, 0, 0,
+                        FW_BOLD, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                        VARIABLE_PITCH | FF_SWISS, "MS Sans Serif");
 
     r.left = 0; r.top = 0; r.right = CLIENT_W; r.bottom = CLIENT_H;
     AdjustWindowRect(&r, style, TRUE);
@@ -564,6 +565,7 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
         DispatchMessage(&m);
     }
     DeleteObject(g_font);
+    DeleteObject(g_btnFont);
     if (g_extIcon) DestroyIcon(g_extIcon);
     return m.wParam;
 }

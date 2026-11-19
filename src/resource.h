@@ -9,7 +9,6 @@
 #define IDM_ABOUT      301
 
 /* About dialog controls */
-#define IDC_ICONPOS    400
 #define IDC_LINE1      401
 #define IDC_LINE2      402
 #define IDC_LINE3      403
