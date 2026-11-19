@@ -554,6 +554,18 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
                         LoadMenu(hInst, g_strBase == STR_BASE_ES ? "MENU_ES" : "MENU_EN"),
                         hInst, NULL);
     if (!hwnd) return 0;
+
+    /* AdjustWindowRect can be off by a pixel with a menu bar on Windows 3.1:
+     * correct the window size so the client area is exactly CLIENT_W x CLIENT_H. */
+    {
+        RECT wr, cr;
+        GetWindowRect(hwnd, &wr);
+        GetClientRect(hwnd, &cr);
+        SetWindowPos(hwnd, NULL, 0, 0,
+                     (wr.right - wr.left) + (CLIENT_W - cr.right),
+                     (wr.bottom - wr.top) + (CLIENT_H - cr.bottom),
+                     SWP_NOMOVE | SWP_NOZORDER);
+    }
     ShowWindow(hwnd, show);
     UpdateWindow(hwnd);
 
