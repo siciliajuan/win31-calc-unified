@@ -26,10 +26,10 @@
 
 /* ---------- Geometry (pixels, VGA at 96 dpi) ---------- */
 /* Measured against a Windows 95 Calculator screenshot (96 dpi):
- * 9 px left / 11 px right / 12 px bottom padding, 36x28 keys on a
+ * 13 px top / 9 px left / 11 px right / 12 px bottom padding, 36x28 keys on a
  * 40 x 34 px grid, Back/CE/C at 48-49 px wide. */
 #define CLIENT_W 268
-#define CLIENT_H 228
+#define CLIENT_H 221
 #define X0 9
 
 typedef struct {
@@ -40,43 +40,43 @@ typedef struct {
 } Button;
 
 static Button buttons[] = {
-    { K_BACK,  X0+ 93,  52, 48, 28, NULL,   C_MAROON },
-    { K_CE,    X0+146,  52, 48, 28, "CE",   C_MAROON },
-    { K_C,     X0+199,  52, 49, 28, "C",    C_MAROON },
+    { K_BACK,  X0+ 93,  45, 48, 28, NULL,   C_MAROON },
+    { K_CE,    X0+146,  45, 48, 28, "CE",   C_MAROON },
+    { K_C,     X0+199,  45, 49, 28, "C",    C_MAROON },
 
-    { K_MC,    X0,      86, 36, 28, "MC",   C_RED },
-    { K_MR,    X0,     120, 36, 28, "MR",   C_RED },
-    { K_MS,    X0,     154, 36, 28, "MS",   C_RED },
-    { K_MPLUS, X0,     188, 36, 28, "M+",   C_RED },
+    { K_MC,    X0,      79, 36, 28, "MC",   C_RED },
+    { K_MR,    X0,     113, 36, 28, "MR",   C_RED },
+    { K_MS,    X0,     147, 36, 28, "MS",   C_RED },
+    { K_MPLUS, X0,     181, 36, 28, "M+",   C_RED },
 
-    { K_7,      X0+ 52,  86, 36, 28, "7",    C_BLUE },
-    { K_8,      X0+ 92,  86, 36, 28, "8",    C_BLUE },
-    { K_9,      X0+132,  86, 36, 28, "9",    C_BLUE },
-    { K_DIV,    X0+172,  86, 36, 28, "/",    C_RED  },
-    { K_SQRT,   X0+212,  86, 36, 28, "sqrt", C_NAVY },
+    { K_7,      X0+ 52,  79, 36, 28, "7",    C_BLUE },
+    { K_8,      X0+ 92,  79, 36, 28, "8",    C_BLUE },
+    { K_9,      X0+132,  79, 36, 28, "9",    C_BLUE },
+    { K_DIV,    X0+172,  79, 36, 28, "/",    C_RED  },
+    { K_SQRT,   X0+212,  79, 36, 28, "sqrt", C_NAVY },
 
-    { K_4,      X0+ 52, 120, 36, 28, "4",    C_BLUE },
-    { K_5,      X0+ 92, 120, 36, 28, "5",    C_BLUE },
-    { K_6,      X0+132, 120, 36, 28, "6",    C_BLUE },
-    { K_MUL,    X0+172, 120, 36, 28, "*",    C_RED  },
-    { K_PERCENT,X0+212, 120, 36, 28, "%",    C_NAVY },
+    { K_4,      X0+ 52, 113, 36, 28, "4",    C_BLUE },
+    { K_5,      X0+ 92, 113, 36, 28, "5",    C_BLUE },
+    { K_6,      X0+132, 113, 36, 28, "6",    C_BLUE },
+    { K_MUL,    X0+172, 113, 36, 28, "*",    C_RED  },
+    { K_PERCENT,X0+212, 113, 36, 28, "%",    C_NAVY },
 
-    { K_1,      X0+ 52, 154, 36, 28, "1",    C_BLUE },
-    { K_2,      X0+ 92, 154, 36, 28, "2",    C_BLUE },
-    { K_3,      X0+132, 154, 36, 28, "3",    C_BLUE },
-    { K_SUB,    X0+172, 154, 36, 28, "-",    C_RED  },
-    { K_RECIP,  X0+212, 154, 36, 28, "1/x",  C_NAVY },
+    { K_1,      X0+ 52, 147, 36, 28, "1",    C_BLUE },
+    { K_2,      X0+ 92, 147, 36, 28, "2",    C_BLUE },
+    { K_3,      X0+132, 147, 36, 28, "3",    C_BLUE },
+    { K_SUB,    X0+172, 147, 36, 28, "-",    C_RED  },
+    { K_RECIP,  X0+212, 147, 36, 28, "1/x",  C_NAVY },
 
-    { K_0,      X0+ 52, 188, 36, 28, "0",    C_BLUE },
-    { K_NEGATE, X0+ 92, 188, 36, 28, "+/-",  C_BLUE },
-    { K_DECIMAL,X0+132, 188, 36, 28, NULL,   C_BLUE },  /* decimal separator */
-    { K_ADD,    X0+172, 188, 36, 28, "+",    C_RED  },
-    { K_EQUALS, X0+212, 188, 36, 28, "=",    C_RED  },
+    { K_0,      X0+ 52, 181, 36, 28, "0",    C_BLUE },
+    { K_NEGATE, X0+ 92, 181, 36, 28, "+/-",  C_BLUE },
+    { K_DECIMAL,X0+132, 181, 36, 28, NULL,   C_BLUE },  /* decimal separator */
+    { K_ADD,    X0+172, 181, 36, 28, "+",    C_RED  },
+    { K_EQUALS, X0+212, 181, 36, 28, "=",    C_RED  },
 };
 #define NBUTTONS (sizeof(buttons) / sizeof(buttons[0]))
 
-static const RECT rcDisplay = { X0, 20, X0 + 248, 46 };
-static const RECT rcMemBox  = { X0, 52, X0 + 36, 78 };
+static const RECT rcDisplay = { X0, 13, X0 + 248, 39 };
+static const RECT rcMemBox  = { X0, 45, X0 + 36, 71 };
 
 /* ---------- Global state ---------- */
 static HINSTANCE  g_hInst;
