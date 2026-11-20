@@ -13,8 +13,8 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        MENUITEM "S&tandard",   IDM_STANDARD, CHECKED
         MENUITEM "&Scientific", IDM_SCIENTIFIC
+        MENUITEM "S&tandard",   IDM_STANDARD, CHECKED
     END
     POPUP "&Help"
     BEGIN
@@ -31,8 +31,8 @@ BEGIN
     END
     POPUP "&Ver"
     BEGIN
-        MENUITEM "&Estándar",   IDM_STANDARD, CHECKED
         MENUITEM "&Científica", IDM_SCIENTIFIC
+        MENUITEM "&Estándar",   IDM_STANDARD, CHECKED
     END
     POPUP "&Ayuda"
     BEGIN
@@ -61,18 +61,18 @@ BEGIN
     LTEXT "", IDC_RES,     95, 110, 157, 8
 END
 
-/* Statistics box (modeless); texts are set at runtime. */
-STATBOX DIALOG 0, 0, 152, 104
+/* Statistics box (modeless), measured against Windows 95; texts are set at runtime. */
+STATBOX DIALOG 0, 0, 144, 84
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
 CAPTION ""
 FONT 8, "Helv"
 BEGIN
-    LISTBOX IDC_STATLIST, 6, 6, 140, 64, LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_BORDER | WS_TABSTOP
-    PUSHBUTTON "RET",  IDC_RET,    6, 76, 32, 14
-    PUSHBUTTON "LOAD", IDC_LOAD,  42, 76, 32, 14
-    PUSHBUTTON "CD",   IDC_CD,    78, 76, 32, 14
-    PUSHBUTTON "CAD",  IDC_CAD,  114, 76, 32, 14
-    LTEXT "", IDC_STATN, 6, 94, 80, 8
+    LISTBOX IDC_STATLIST, 3, 2, 139, 33, LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_BORDER | WS_TABSTOP
+    DEFPUSHBUTTON "&RET", IDC_RET,   3, 57, 28, 14
+    PUSHBUTTON "&LOAD",   IDC_LOAD, 39, 57, 28, 14
+    PUSHBUTTON "&CD",     IDC_CD,   75, 57, 28, 14
+    PUSHBUTTON "C&AD",    IDC_CAD, 111, 57, 28, 14
+    CTEXT "", IDC_STATN, 0, 76, 144, 8
 END
 
 STRINGTABLE
@@ -108,10 +108,10 @@ BEGIN
     STR_BASE_EN + IDS_INV,         "Inv"
     STR_BASE_EN + IDS_HYP,         "Hyp"
     STR_BASE_EN + IDS_STAT_TITLE,  "Statistics Box"
-    STR_BASE_EN + IDS_STAT_RET,    "RET"
-    STR_BASE_EN + IDS_STAT_LOAD,   "LOAD"
-    STR_BASE_EN + IDS_STAT_CD,     "CD"
-    STR_BASE_EN + IDS_STAT_CAD,    "CAD"
+    STR_BASE_EN + IDS_STAT_RET,    "&RET"
+    STR_BASE_EN + IDS_STAT_LOAD,   "&LOAD"
+    STR_BASE_EN + IDS_STAT_CD,     "&CD"
+    STR_BASE_EN + IDS_STAT_CAD,    "C&AD"
     STR_BASE_EN + IDS_STAT_N,      "n=%d"
 
     STR_BASE_ES + IDS_TITLE,       "Calculadora"
@@ -145,9 +145,9 @@ BEGIN
     STR_BASE_ES + IDS_INV,         "Inv"
     STR_BASE_ES + IDS_HYP,         "Hyp"
     STR_BASE_ES + IDS_STAT_TITLE,  "Cuadro de estadísticas"
-    STR_BASE_ES + IDS_STAT_RET,    "RET"
-    STR_BASE_ES + IDS_STAT_LOAD,   "LOAD"
-    STR_BASE_ES + IDS_STAT_CD,     "CD"
-    STR_BASE_ES + IDS_STAT_CAD,    "CAD"
+    STR_BASE_ES + IDS_STAT_RET,    "&RET"
+    STR_BASE_ES + IDS_STAT_LOAD,   "&LOAD"
+    STR_BASE_ES + IDS_STAT_CD,     "&CD"
+    STR_BASE_ES + IDS_STAT_CAD,    "C&AD"
     STR_BASE_ES + IDS_STAT_N,      "n=%d"
 END

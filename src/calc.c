@@ -376,9 +376,9 @@ static void DrawButton(HDC hdc, int i)
     else if (b->key == K_DECIMAL) label = g_decLabel;
 
     FillSolid(hdc, b->x, b->y, b->w, b->h, C_FACE);
-    if (down) {
-        Frame(hdc, b->x, b->y, b->w, b->h, C_DARK, C_DARK);
-        Frame(hdc, b->x + 1, b->y + 1, b->w - 2, b->h - 2, C_SHADOW, C_SHADOW);
+    if (down) {   /* pressed: sunken edge, as in Windows 95 */
+        Frame(hdc, b->x, b->y, b->w, b->h, C_DARK, C_LIGHT);
+        Frame(hdc, b->x + 1, b->y + 1, b->w - 2, b->h - 2, C_SHADOW, C_FACE);
     } else {
         Frame(hdc, b->x, b->y, b->w, b->h, C_LIGHT, C_DARK);
         Frame(hdc, b->x + 1, b->y + 1, b->w - 2, b->h - 2, C_FACE, C_SHADOW);
@@ -617,6 +617,8 @@ static void StatRefresh(void)
         sci_format(&g_sci, g_sci.data[i], g_dec, buf, sizeof(buf));
         SendMessage(list, LB_ADDSTRING, 0, (LPARAM)(LPSTR)buf);
     }
+    if (g_sci.ndata > 0)   /* like Windows 95: the newest value is selected */
+        SendMessage(list, LB_SETCURSEL, g_sci.ndata - 1, 0);
     SendMessage(list, WM_SETREDRAW, TRUE, 0);
     InvalidateRect(list, NULL, TRUE);
     LoadStr(IDS_STAT_N, fmt, sizeof(fmt));
@@ -676,9 +678,9 @@ static void OpenStatBox(void)
     if (!g_statProc) g_statProc = MakeProcInstance((FARPROC)StatProc, g_hInst);
     g_statBox = CreateDialog(g_hInst, "STATBOX", g_hwnd, (DLGPROC)g_statProc);
     if (!g_statBox) return;
-    /* place it to the right of the calculator if there is room */
+    /* same place as in Windows 95: over the left part of the calculator */
     GetWindowRect(g_hwnd, &wr);
-    SetWindowPos(g_statBox, NULL, wr.right + 4, wr.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    SetWindowPos(g_statBox, NULL, wr.left + 57, wr.top + 105, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     StatRefresh();
     SetFocus(g_hwnd);
 }
