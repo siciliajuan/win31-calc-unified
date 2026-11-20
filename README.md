@@ -28,7 +28,7 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
 |---|---|---|
 | 1 | Standard mode, English/Spanish localization | Done, tested on a real 486 |
 | 2 | Scientific mode | Done, tested on a real 486 |
-| 3 | Setup and uninstall floppy (1.44 MB image) | Done, awaiting tests on real hardware |
+| 3 | Setup and uninstall floppy (1.44 MB image) | Done, tested |
 
 ## Features
 
