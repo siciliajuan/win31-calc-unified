@@ -431,8 +431,10 @@ static void DrawBox(HDC hdc, const RECT *rc, const char *text)
     }
 }
 
-/* 12x12 Windows 95-style radio button */
-static void DrawRadio(HDC hdc, int x, int y, int on)
+/* 12x12 Windows 95-style radio button, cached in two bitmaps (SetPixel is slow) */
+static HBITMAP g_radioBmp[2];
+
+static void BuildRadio(HDC ref, int on)
 {
     static const char *map[12] = {
         "....GGGG....",
@@ -448,24 +450,40 @@ static void DrawRadio(HDC hdc, int x, int y, int on)
         "..LLFFFFLL..",
         "....LLLL....",
     };
+    HDC mem = CreateCompatibleDC(ref);
+    HBITMAP old;
     int i, j;
+    g_radioBmp[on] = CreateCompatibleBitmap(ref, 12, 12);
+    old = SelectObject(mem, g_radioBmp[on]);
     for (i = 0; i < 12; i++) {
         for (j = 0; j < 12; j++) {
             COLORREF c;
             switch (map[i][j]) {
             case 'G': c = C_SHADOW; break;
             case 'K': c = C_DARK; break;
-            case 'W': c = C_LIGHT; break;
-            case 'F': c = C_FACE; break;
-            case 'L': c = C_LIGHT; break;
-            default: continue;
+            case 'W': case 'L': c = C_LIGHT; break;
+            default: c = C_FACE; break;     /* 'F' and the corners */
             }
             if (on && i >= 4 && i <= 7 && j >= 4 && j <= 7 &&
                 !((i == 4 || i == 7) && (j == 4 || j == 7)))
                 c = C_DARK;
-            SetPixel(hdc, x + j, y + i, c);
+            SetPixel(mem, j, i, c);
         }
     }
+    SelectObject(mem, old);
+    DeleteDC(mem);
+}
+
+static void DrawRadio(HDC hdc, int x, int y, int on)
+{
+    HDC mem;
+    HBITMAP old;
+    if (!g_radioBmp[on]) BuildRadio(hdc, on);
+    mem = CreateCompatibleDC(hdc);
+    old = SelectObject(mem, g_radioBmp[on]);
+    BitBlt(hdc, x, y, 12, 12, mem, 0, 0, SRCCOPY);
+    SelectObject(mem, old);
+    DeleteDC(mem);
 }
 
 /* 13x13 Windows 95-style check box */
@@ -540,13 +558,18 @@ static void Paint(HWND hwnd)
     SetBkMode(hdc, TRANSPARENT);
     FillRect(hdc, &ps.rcPaint, g_brFace);   /* background only where needed */
 
-    DrawDisplay(hdc);
+    if (IntersectRect(&tmp, &ps.rcPaint, g_isSci ? &rcSciDisplay : &rcStdDisplay))
+        DrawDisplay(hdc);
     if (g_isSci) {
         if (g_sci.parens > 0) sprintf(paren, "(=%d", g_sci.parens); else paren[0] = '\0';
-        DrawBox(hdc, &rcParenBox, paren);
-        DrawBox(hdc, &rcSciMemBox, g_sci.mem != 0.0 ? "M" : "");
-        DrawControls(hdc);
-    } else {
+        if (IntersectRect(&tmp, &ps.rcPaint, &rcParenBox)) DrawBox(hdc, &rcParenBox, paren);
+        if (IntersectRect(&tmp, &ps.rcPaint, &rcSciMemBox))
+            DrawBox(hdc, &rcSciMemBox, g_sci.mem != 0.0 ? "M" : "");
+        if (IntersectRect(&tmp, &ps.rcPaint, &rcBaseGroup) ||
+            IntersectRect(&tmp, &ps.rcPaint, &rcWordGroup) ||
+            IntersectRect(&tmp, &ps.rcPaint, &rcInvGroup))
+            DrawControls(hdc);
+    } else if (IntersectRect(&tmp, &ps.rcPaint, &rcStdMemBox)) {
         DrawBox(hdc, &rcStdMemBox, eng_has_memory(&g_eng) ? "M" : "");
     }
     SelectObject(hdc, g_btnFont);
@@ -569,15 +592,24 @@ static void InvalidateButton(HWND hwnd, int i)
     InvalidateRect(hwnd, &r, FALSE);
 }
 
+/* Last painted state, so a key press only repaints what changed */
+static int g_lastBase = -1, g_lastWord, g_lastAngle, g_lastInv, g_lastHyp, g_lastParens = -1;
+static int g_lastMem = -1;
+
 static void Refresh(HWND hwnd)
 {
     if (g_isSci) {
+        int mem = g_sci.mem != 0.0;
         InvalidateRect(hwnd, &rcSciDisplay, FALSE);
-        InvalidateRect(hwnd, &rcParenBox, FALSE);
-        InvalidateRect(hwnd, &rcSciMemBox, FALSE);
-        InvalidateRect(hwnd, &rcBaseGroup, FALSE);
-        InvalidateRect(hwnd, &rcWordGroup, FALSE);
-        InvalidateRect(hwnd, &rcInvGroup, FALSE);
+        if (g_sci.parens != g_lastParens) InvalidateRect(hwnd, &rcParenBox, FALSE);
+        if (mem != g_lastMem) InvalidateRect(hwnd, &rcSciMemBox, FALSE);
+        if (g_sci.base != g_lastBase || g_sci.wordBits != g_lastWord || g_sci.angle != g_lastAngle) {
+            InvalidateRect(hwnd, &rcBaseGroup, FALSE);
+            InvalidateRect(hwnd, &rcWordGroup, FALSE);
+        }
+        if (g_sci.inv != g_lastInv || g_sci.hyp != g_lastHyp) InvalidateRect(hwnd, &rcInvGroup, FALSE);
+        g_lastBase = g_sci.base; g_lastWord = g_sci.wordBits; g_lastAngle = g_sci.angle;
+        g_lastInv = g_sci.inv; g_lastHyp = g_sci.hyp; g_lastParens = g_sci.parens; g_lastMem = mem;
     } else {
         InvalidateRect(hwnd, &rcStdDisplay, FALSE);
         InvalidateRect(hwnd, &rcStdMemBox, FALSE);
@@ -629,42 +661,6 @@ static void StatRefresh(void)
     SetDlgItemText(g_statBox, IDC_STATN, buf);
 }
 
-/* Windows 95-style push button for the Statistics box (owner-drawn) */
-static void DrawStatButton(const DRAWITEMSTRUCT FAR *di)
-{
-    HDC hdc = di->hDC;
-    RECT r = di->rcItem;
-    char text[32];
-    int down = (di->itemState & ODS_SELECTED) != 0;
-    int x, y, w, h;
-    HFONT old;
-
-    FillRect(hdc, &r, g_brFace);
-    if (di->CtlID == IDC_RET) {          /* default button: extra black outline */
-        Frame(hdc, r.left, r.top, r.right - r.left, r.bottom - r.top, C_DARK, C_DARK);
-        InflateRect(&r, -1, -1);
-    }
-    x = r.left; y = r.top; w = r.right - r.left; h = r.bottom - r.top;
-    if (down) {
-        Frame(hdc, x, y, w, h, C_SHADOW, C_SHADOW);
-    } else {
-        Frame(hdc, x, y, w, h, C_LIGHT, C_DARK);
-        Frame(hdc, x + 1, y + 1, w - 2, h - 2, C_FACE, C_SHADOW);
-    }
-    GetWindowText(di->hwndItem, text, sizeof(text));
-    old = SelectObject(hdc, g_font);
-    SetBkMode(hdc, TRANSPARENT);
-    SetTextColor(hdc, C_DARK);
-    if (down) OffsetRect(&r, 1, 1);
-    DrawText(hdc, text, -1, &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    if (di->itemState & ODS_FOCUS) {
-        RECT f = r;
-        InflateRect(&f, -3, -3);
-        DrawFocusRect(hdc, &f);
-    }
-    SelectObject(hdc, old);
-}
-
 BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
     int sel;
@@ -710,10 +706,6 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         EndPaint(dlg, &ps);
         return TRUE;
     }
-
-    case WM_DRAWITEM:
-        DrawStatButton((const DRAWITEMSTRUCT FAR *)lp);
-        return TRUE;
 
     case WM_COMMAND:
         sel = (int)SendDlgItemMessage(dlg, IDC_STATLIST, LB_GETCURSEL, 0, 0);
@@ -1126,6 +1118,8 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
     DeleteObject(g_brShadow);
     DeleteObject(g_brLight);
     DeleteObject(g_brDark);
+    if (g_radioBmp[0]) DeleteObject(g_radioBmp[0]);
+    if (g_radioBmp[1]) DeleteObject(g_radioBmp[1]);
     if (g_extIcon) DestroyIcon(g_extIcon);
     return m.wParam;
 }
