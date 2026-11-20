@@ -146,8 +146,8 @@ BEGIN
     STR_BASE_ES + IDS_HYP,         "Hyp"
     STR_BASE_ES + IDS_STAT_TITLE,  "Cuadro de estadísticas"
     STR_BASE_ES + IDS_STAT_RET,    "&RET"
-    STR_BASE_ES + IDS_STAT_LOAD,   "&CARGAR"
-    STR_BASE_ES + IDS_STAT_CD,     "C&D"
+    STR_BASE_ES + IDS_STAT_LOAD,   "&LOAD"
+    STR_BASE_ES + IDS_STAT_CD,     "&CD"
     STR_BASE_ES + IDS_STAT_CAD,    "C&AD"
     STR_BASE_ES + IDS_STAT_N,      "n=%d"
 END
