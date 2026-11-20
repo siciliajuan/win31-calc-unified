@@ -1,0 +1,50 @@
+/* setup.rc - resources for SETUP.EXE and UNINSTAL.EXE (converted to Windows-1252) */
+#include <windows.h>
+#include "setupres.h"
+
+SETUP ICON calc.ico
+
+STRINGTABLE
+BEGIN
+    STR_EN + IDS_SETUP_TITLE,       "Windows 95-style Calculator Setup"
+    STR_EN + IDS_UNINST_TITLE,      "Windows 95-style Calculator Uninstall"
+    STR_EN + IDS_CONFIRM_INSTALL,   "This will replace Calculator with the Windows 95-style Calculator.\n\nThe original is kept as CALC31.EXE in the Windows directory, and UNINSTAL.EXE on this disk restores it.\n\nDo you want to continue?"
+    STR_EN + IDS_CONFIRM_UPGRADE,   "The Windows 95-style Calculator is already installed.\n\nDo you want to update it to the version on this disk?"
+    STR_EN + IDS_DONE_INSTALL,      "Installation complete.\n\nThe new Calculator is in the same place as the old one."
+    STR_EN + IDS_DONE_UPGRADE,      "The Calculator has been updated."
+    STR_EN + IDS_NO_SOURCE,         "CALC95.EXE was not found next to SETUP.EXE."
+    STR_EN + IDS_BACKUP_EXISTS,     "CALC31.EXE already exists in the Windows directory.\n\nTo avoid losing the original Calculator, nothing has been changed."
+    STR_EN + IDS_CLOSE_CALC,        "Please close Calculator before continuing."
+    STR_EN + IDS_ERR_RENAME,        "A file could not be renamed in the Windows directory. Nothing has been changed."
+    STR_EN + IDS_ERR_COPY,          "The new Calculator could not be copied. The original has been left as it was."
+    STR_EN + IDS_NO_GROUP,          "No Calculator icon and no Accessories group were found in Program Manager.\n\nYou can add CALC.EXE from the Windows directory yourself."
+    STR_EN + IDS_NO_PROGMAN,        "Program Manager could not be contacted, so its icons have not been changed."
+    STR_EN + IDS_ITEM_NAME,         "Calculator"
+    STR_EN + IDS_NOT_INSTALLED,     "The Windows 95-style Calculator is not installed on this computer."
+    STR_EN + IDS_NOT_OURS,          "CALC.EXE in the Windows directory is not the Windows 95-style Calculator, so nothing has been changed."
+    STR_EN + IDS_NO_BACKUP,         "The original Calculator (CALC31.EXE) was not found in the Windows directory, so nothing has been changed."
+    STR_EN + IDS_CONFIRM_UNINSTALL, "This will remove the Windows 95-style Calculator and restore the original one.\n\nDo you want to continue?"
+    STR_EN + IDS_ERR_DELETE,        "CALC.EXE could not be replaced. Nothing has been changed."
+    STR_EN + IDS_DONE_UNINSTALL,    "The original Calculator has been restored."
+
+    STR_ES + IDS_SETUP_TITLE,       "Instalación de la Calculadora estilo Windows 95"
+    STR_ES + IDS_UNINST_TITLE,      "Desinstalación de la Calculadora estilo Windows 95"
+    STR_ES + IDS_CONFIRM_INSTALL,   "Se va a sustituir la Calculadora por la Calculadora con el estilo de Windows 95.\n\nLa original se conserva como CALC31.EXE en el directorio de Windows, y UNINSTAL.EXE, en este disco, la restaura.\n\n¿Desea continuar?"
+    STR_ES + IDS_CONFIRM_UPGRADE,   "La Calculadora estilo Windows 95 ya está instalada.\n\n¿Desea actualizarla a la versión de este disco?"
+    STR_ES + IDS_DONE_INSTALL,      "Instalación completada.\n\nLa nueva Calculadora está en el mismo sitio que la anterior."
+    STR_ES + IDS_DONE_UPGRADE,      "La Calculadora se ha actualizado."
+    STR_ES + IDS_NO_SOURCE,         "No se ha encontrado CALC95.EXE junto a SETUP.EXE."
+    STR_ES + IDS_BACKUP_EXISTS,     "Ya existe CALC31.EXE en el directorio de Windows.\n\nPara no perder la Calculadora original, no se ha cambiado nada."
+    STR_ES + IDS_CLOSE_CALC,        "Cierre la Calculadora antes de continuar."
+    STR_ES + IDS_ERR_RENAME,        "No se ha podido cambiar el nombre de un archivo del directorio de Windows. No se ha cambiado nada."
+    STR_ES + IDS_ERR_COPY,          "No se ha podido copiar la nueva Calculadora. La original se ha dejado como estaba."
+    STR_ES + IDS_NO_GROUP,          "No se ha encontrado en el Administrador de programas ni el icono de la Calculadora ni el grupo Accesorios.\n\nPuede añadir usted mismo CALC.EXE, del directorio de Windows."
+    STR_ES + IDS_NO_PROGMAN,        "No se ha podido contactar con el Administrador de programas, así que sus iconos no se han cambiado."
+    STR_ES + IDS_ITEM_NAME,         "Calculadora"
+    STR_ES + IDS_NOT_INSTALLED,     "La Calculadora estilo Windows 95 no está instalada en este equipo."
+    STR_ES + IDS_NOT_OURS,          "CALC.EXE, en el directorio de Windows, no es la Calculadora estilo Windows 95, así que no se ha cambiado nada."
+    STR_ES + IDS_NO_BACKUP,         "No se ha encontrado la Calculadora original (CALC31.EXE) en el directorio de Windows, así que no se ha cambiado nada."
+    STR_ES + IDS_CONFIRM_UNINSTALL, "Se va a quitar la Calculadora estilo Windows 95 y a restaurar la original.\n\n¿Desea continuar?"
+    STR_ES + IDS_ERR_DELETE,        "No se ha podido sustituir CALC.EXE. No se ha cambiado nada."
+    STR_ES + IDS_DONE_UNINSTALL,    "Se ha restaurado la Calculadora original."
+END

@@ -27,8 +27,8 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
 | Phase | Scope | State |
 |---|---|---|
 | 1 | Standard mode, English/Spanish localization | Done, tested on a real 486 |
-| 2 | Scientific mode | Done, awaiting tests on real hardware |
-| 3 | Windows 3.x–style setup floppy (1.44 MB image) | Planned |
+| 2 | Scientific mode | Done, tested on a real 486 |
+| 3 | Setup and uninstall floppy (1.44 MB image) | Done, awaiting tests on real hardware |
 
 ## Features
 
@@ -58,7 +58,8 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
 - Windows 3.1 or 3.11, in standard or 386 enhanced mode.
 - To build:
   - [Open Watcom v2](https://github.com/open-watcom/open-watcom-v2), which runs on Linux, Windows or macOS;
-  - `python3` and `iconv`, used to generate the icon and convert the resource script to Windows-1252.
+  - `python3` and `iconv`, used to generate the icon and convert the resource scripts to Windows-1252;
+  - `mtools` and `zip`, for the floppy image.
 
 ## Building
 
@@ -69,7 +70,11 @@ export INCLUDE=$WATCOM/h:$WATCOM/h/win
 ./build.sh
 ```
 
-The executable is written to `build/CALC.EXE`.
+`build.sh` writes `CALC.EXE`, `SETUP.EXE` and `UNINSTAL.EXE` to `build/`. To make the floppy image and the zip (needs `mtools` and `zip`):
+
+```sh
+./tools/make_floppy.sh      # build/dist/CALC95.IMG and build/dist/calc95-disk.zip
+```
 
 Engine tests run on the host with any C compiler:
 
@@ -79,14 +84,23 @@ gcc -I../src test_engine.c ../src/engine.c -lm -o test_engine && ./test_engine
 gcc -I../src test_sci.c ../src/sci.c -lm -o test_sci && ./test_sci
 ```
 
-## Trying it on Windows 3.1
+## Installing on Windows 3.1
 
-Until the installer exists, keep the original calculator untouched:
+Download `CALC95.IMG` (a 1.44 MB floppy image) or `calc95-disk.zip` from the Releases page, write it to a floppy disk or copy the files to any folder, and run `SETUP.EXE` from File Manager or Program Manager (File › Run).
 
-1. Copy `CALC.EXE` to its own folder, for example `C:\CALC95\`.
-2. In Program Manager, choose File › New › Program Item and set the command line to `C:\CALC95\CALC.EXE`.
-3. Optional: to get the original icon, run `COPY C:\WINDOWS\CALC.EXE C:\WINDOWS\CALC31.EXE`.
-4. To try the other language, change the language in Control Panel › International and restart the calculator.
+Setup:
+
+1. renames the original `<WINDOWS>\CALC.EXE` to `CALC31.EXE` (if it is already this calculator, it is only updated);
+2. copies the new calculator as `<WINDOWS>\CALC.EXE`;
+3. replaces the Calculator icon in Program Manager in place, using the original Calculator icon (the calculator also uses it when minimized);
+4. records what it changed in `WIN.INI [Calc95]`.
+
+`UNINSTAL.EXE`, on the same disk, puts everything back as it was: the original `CALC.EXE`, the Program Manager icon and `WIN.INI`. Neither program is copied to your system.
+
+Notes:
+
+- Both programs ask you to close Calculator first, and Setup never overwrites an existing `CALC31.EXE`.
+- The calculator's module name is `CALC95`, so it can run next to the original (`CALC31.EXE`).
 
 ## Keyboard
 
@@ -126,7 +140,10 @@ src/
   calc.c                Window, painting, mouse, keyboard, clipboard
   calc.rc.utf8          Menus and strings (EN/ES), converted to CP1252 at build time
   resource.h            Resource identifiers
+setup/setup.c           SETUP.EXE and UNINSTAL.EXE (same source, built twice)
+setup/setup.rc.utf8     Installer strings (EN/ES)
 tools/make_icon.py      Generates the fallback 32x32, 16-color icon
+tools/make_floppy.sh    Builds the 1.44 MB setup floppy image and zip
 test/test_*.c           Host-side engine tests
 build.sh                Build script (Open Watcom v2)
 ```
