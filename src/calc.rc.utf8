@@ -14,7 +14,7 @@ BEGIN
     POPUP "&View"
     BEGIN
         MENUITEM "S&tandard",   IDM_STANDARD, CHECKED
-        MENUITEM "&Scientific", IDM_SCIENTIFIC, GRAYED
+        MENUITEM "&Scientific", IDM_SCIENTIFIC
     END
     POPUP "&Help"
     BEGIN
@@ -32,7 +32,7 @@ BEGIN
     POPUP "&Ver"
     BEGIN
         MENUITEM "&Estándar",   IDM_STANDARD, CHECKED
-        MENUITEM "&Científica", IDM_SCIENTIFIC, GRAYED
+        MENUITEM "&Científica", IDM_SCIENTIFIC
     END
     POPUP "&Ayuda"
     BEGIN
@@ -61,6 +61,20 @@ BEGIN
     LTEXT "", IDC_RES,     95, 110, 157, 8
 END
 
+/* Statistics box (modeless); texts are set at runtime. */
+STATBOX DIALOG 0, 0, 152, 104
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
+CAPTION ""
+FONT 8, "Helv"
+BEGIN
+    LISTBOX IDC_STATLIST, 6, 6, 140, 64, LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_BORDER | WS_TABSTOP
+    PUSHBUTTON "RET",  IDC_RET,    6, 76, 32, 14
+    PUSHBUTTON "LOAD", IDC_LOAD,  42, 76, 32, 14
+    PUSHBUTTON "CD",   IDC_CD,    78, 76, 32, 14
+    PUSHBUTTON "CAD",  IDC_CAD,  114, 76, 32, 14
+    LTEXT "", IDC_STATN, 6, 94, 80, 8
+END
+
 STRINGTABLE
 BEGIN
     STR_BASE_EN + IDS_TITLE,       "Calculator"
@@ -70,7 +84,7 @@ BEGIN
     STR_BASE_EN + IDS_ERR_OVERFLW, "Overflow."
     STR_BASE_EN + IDS_ABOUT_TITLE, "About Calculator"
     STR_BASE_EN + IDS_ABOUT_L1,    "Windows 95-style Calculator"
-    STR_BASE_EN + IDS_ABOUT_L2,    "Version 0.1 (phase 1: Standard)"
+    STR_BASE_EN + IDS_ABOUT_L2,    "Version 0.2 (phase 2: Scientific)"
     STR_BASE_EN + IDS_ABOUT_L3,    "Copyright © 2026 Juan Sicilia · MIT License"
     STR_BASE_EN + IDS_ABOUT_L4,    "Handmade for a 486, with nostalgia and Open Watcom."
     STR_BASE_EN + IDS_ABOUT_L5,    "No pixels from 1995 were harmed in the making of this program."
@@ -81,6 +95,24 @@ BEGIN
     STR_BASE_EN + IDS_RES_LABEL,   "System Resources:"
     STR_BASE_EN + IDS_RES_FMT,     "%u%% Free"
     STR_BASE_EN + IDS_OK,          "OK"
+    STR_BASE_EN + IDS_HEX,         "Hex"
+    STR_BASE_EN + IDS_DEC,         "Dec"
+    STR_BASE_EN + IDS_OCT,         "Oct"
+    STR_BASE_EN + IDS_BIN,         "Bin"
+    STR_BASE_EN + IDS_DWORD,       "Dword"
+    STR_BASE_EN + IDS_WORD,        "Word"
+    STR_BASE_EN + IDS_BYTE,        "Byte"
+    STR_BASE_EN + IDS_DEG,         "Deg"
+    STR_BASE_EN + IDS_RAD,         "Rad"
+    STR_BASE_EN + IDS_GRAD,        "Grad"
+    STR_BASE_EN + IDS_INV,         "Inv"
+    STR_BASE_EN + IDS_HYP,         "Hyp"
+    STR_BASE_EN + IDS_STAT_TITLE,  "Statistics Box"
+    STR_BASE_EN + IDS_STAT_RET,    "RET"
+    STR_BASE_EN + IDS_STAT_LOAD,   "LOAD"
+    STR_BASE_EN + IDS_STAT_CD,     "CD"
+    STR_BASE_EN + IDS_STAT_CAD,    "CAD"
+    STR_BASE_EN + IDS_STAT_N,      "n=%d"
 
     STR_BASE_ES + IDS_TITLE,       "Calculadora"
     STR_BASE_ES + IDS_BACKSPACE,   "Atrás"
@@ -89,7 +121,7 @@ BEGIN
     STR_BASE_ES + IDS_ERR_OVERFLW, "Desbordamiento."
     STR_BASE_ES + IDS_ABOUT_TITLE, "Acerca de Calculadora"
     STR_BASE_ES + IDS_ABOUT_L1,    "Calculadora estilo 95 para Windows"
-    STR_BASE_ES + IDS_ABOUT_L2,    "Versión 0.1 (fase 1: Estándar)"
+    STR_BASE_ES + IDS_ABOUT_L2,    "Versión 0.2 (fase 2: Científica)"
     STR_BASE_ES + IDS_ABOUT_L3,    "Copyright © 2026 Juan Sicilia · Licencia MIT"
     STR_BASE_ES + IDS_ABOUT_L4,    "Hecha a mano para un 486, con nostalgia y Open Watcom."
     STR_BASE_ES + IDS_ABOUT_L5,    "Ningún píxel de 1995 sufrió daños durante su desarrollo."
@@ -100,4 +132,22 @@ BEGIN
     STR_BASE_ES + IDS_RES_LABEL,   "Recursos del sistema:"
     STR_BASE_ES + IDS_RES_FMT,     "%u%% libre"
     STR_BASE_ES + IDS_OK,          "Aceptar"
+    STR_BASE_ES + IDS_HEX,         "Hex"
+    STR_BASE_ES + IDS_DEC,         "Dec"
+    STR_BASE_ES + IDS_OCT,         "Oct"
+    STR_BASE_ES + IDS_BIN,         "Bin"
+    STR_BASE_ES + IDS_DWORD,       "Dword"
+    STR_BASE_ES + IDS_WORD,        "Word"
+    STR_BASE_ES + IDS_BYTE,        "Byte"
+    STR_BASE_ES + IDS_DEG,         "Grados"
+    STR_BASE_ES + IDS_RAD,         "Radianes"
+    STR_BASE_ES + IDS_GRAD,        "Grad."
+    STR_BASE_ES + IDS_INV,         "Inv"
+    STR_BASE_ES + IDS_HYP,         "Hyp"
+    STR_BASE_ES + IDS_STAT_TITLE,  "Cuadro de estadísticas"
+    STR_BASE_ES + IDS_STAT_RET,    "RET"
+    STR_BASE_ES + IDS_STAT_LOAD,   "LOAD"
+    STR_BASE_ES + IDS_STAT_CD,     "CD"
+    STR_BASE_ES + IDS_STAT_CAD,    "CAD"
+    STR_BASE_ES + IDS_STAT_N,      "n=%d"
 END

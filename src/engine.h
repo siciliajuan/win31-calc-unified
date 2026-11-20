@@ -29,6 +29,16 @@ enum {
     K_SQRT, K_PERCENT, K_RECIP,
     K_BACK, K_CE, K_C,
     K_MC, K_MR, K_MS, K_MPLUS,
+    /* Scientific mode only (the Standard engine ignores them) */
+    K_A, K_B, K_HEXC, K_D, K_E, K_F,
+    K_LPAREN, K_RPAREN,
+    K_MOD, K_AND, K_OR, K_XOR, K_LSH, K_NOT, K_INT,
+    K_STA, K_AVE, K_SUM, K_SDEV, K_DAT,
+    K_FE, K_DMS, K_EXP, K_LN, K_SIN, K_POW, K_LOG, K_COS, K_CUBE,
+    K_FACT, K_TAN, K_SQR, K_PI,
+    K_HEX, K_DECBASE, K_OCT, K_BIN,
+    K_W0, K_W1, K_W2,        /* Dword/Word/Byte or Deg/Rad/Grad */
+    K_INV, K_HYP,
     K_COUNT
 };
 
@@ -48,6 +58,7 @@ typedef struct {
 void   eng_init(CalcEngine *e);
 void   eng_key(CalcEngine *e, int key);
 double eng_value(const CalcEngine *e);
+void   eng_set_value(CalcEngine *e, double v);   /* used when switching views */
 int    eng_has_memory(const CalcEngine *e);
 /* Display text. On error returns "" and the caller shows the message. */
 void   eng_display(const CalcEngine *e, char decChar, char *out, int outlen);

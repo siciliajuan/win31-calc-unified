@@ -20,6 +20,14 @@
 #define IDC_RESLBL     409
 #define IDC_RES        410
 
+/* Statistics box controls */
+#define IDC_STATLIST   420
+#define IDC_RET        421
+#define IDC_LOAD       422
+#define IDC_CD         423
+#define IDC_CAD        424
+#define IDC_STATN      425
+
 /* Strings: each language adds its base to the index */
 #define STR_BASE_EN    0
 #define STR_BASE_ES    100
@@ -42,5 +50,23 @@
 #define IDS_RES_LABEL   16
 #define IDS_RES_FMT     17
 #define IDS_OK          18
+#define IDS_HEX         20
+#define IDS_DEC         21
+#define IDS_OCT         22
+#define IDS_BIN         23
+#define IDS_DWORD       24
+#define IDS_WORD        25
+#define IDS_BYTE        26
+#define IDS_DEG         27
+#define IDS_RAD         28
+#define IDS_GRAD        29
+#define IDS_INV         30
+#define IDS_HYP         31
+#define IDS_STAT_TITLE  32
+#define IDS_STAT_RET    33
+#define IDS_STAT_LOAD   34
+#define IDS_STAT_CD     35
+#define IDS_STAT_CAD    36
+#define IDS_STAT_N      37
 
 #endif

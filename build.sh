@@ -10,11 +10,12 @@ cp src/resource.h build/
 
 cd build
 wcc -q -bt=windows -ms -fpc -ox -w4 -zW -i=../src ../src/engine.c -fo=engine.obj
+wcc -q -bt=windows -ms -fpc -ox -w4 -zW -i=../src ../src/sci.c    -fo=sci.obj
 wcc -q -bt=windows -ms -fpc -ox -w4 -zW -i=../src ../src/calc.c   -fo=calc.obj
 wrc -q -r -bt=windows -i=. -i="$WATCOM/h/win" calc.rc -fo=calc.res
 wlink op q system windows name CALC.EXE \
       op heapsize=4096 op stack=8192 \
       op description 'Calc95' \
-      file calc.obj,engine.obj library shell
+      file calc.obj,engine.obj,sci.obj library shell
 wrc -q -bt=windows calc.res CALC.EXE
 ls -l CALC.EXE

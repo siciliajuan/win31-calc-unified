@@ -46,6 +46,14 @@ double eng_value(const CalcEngine *e)
     return e->cur;
 }
 
+void eng_set_value(CalcEngine *e, double v)
+{
+    e->err = ERR_NONE;
+    set_result(e, v);
+    e->pendOp = OP_NONE;
+    e->newOperand = 1;
+}
+
 int eng_has_memory(const CalcEngine *e)
 {
     return e->mem != 0.0;

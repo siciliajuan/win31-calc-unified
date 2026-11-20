@@ -21,10 +21,10 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
 | Phase | Scope | State |
 |---|---|---|
 | 1 | Standard mode, English/Spanish localization | Done, tested on a real 486 |
-| 2 | Scientific mode | Planned |
+| 2 | Scientific mode | Done, awaiting tests on real hardware |
 | 3 | Windows 3.x–style setup floppy (1.44 MB image) | Planned |
 
-## Features (phase 1)
+## Features
 
 - Standard mode with Windows 95 behavior:
   - chained left-to-right evaluation and repeatable `=`;
@@ -32,6 +32,13 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
   - `sqrt` and `1/x`;
   - Back (backspace), CE and C;
   - MC/MR/MS/M+ memory with an "M" indicator.
+- Scientific mode with Windows 95 behavior (View › Scientific):
+  - operator precedence (`2 + 3 * 4 = 14`) and up to 25 levels of parentheses, with a `(=n` indicator;
+  - Hex/Dec/Oct/Bin with Dword/Word/Byte word sizes (two's complement), and Deg/Rad/Grad angles;
+  - `sin` `cos` `tan` `ln` `log` `x^y` `x^2` `x^3` `n!` `1/x` `dms` `Exp` `F-E` `PI`, with `Inv` and `Hyp`;
+  - `Mod` `And` `Or` `Xor` `Lsh` `Not` `Int`;
+  - Statistics box (`Sta`, `Ave`, `Sum`, `s`, `Dat`).
+- The last view is remembered in `WIN.INI [SciCalc] layout` (0 = Scientific, 1 = Standard).
 - Mouse buttons that stay pressed while held. Full keyboard support.
 - Copy and paste through the clipboard (`Ctrl+C` / `Ctrl+V`).
 - Localization, read once at startup:
@@ -63,6 +70,7 @@ Engine tests run on the host with any C compiler:
 ```sh
 cd test
 gcc -I../src test_engine.c ../src/engine.c -lm -o test_engine && ./test_engine
+gcc -I../src test_sci.c ../src/sci.c -lm -o test_sci && ./test_sci
 ```
 
 ## Trying it on Windows 3.1
@@ -81,8 +89,8 @@ Until the installer exists, keep the original calculator untouched:
 | `0`–`9`, `.` or `,` | Digits and decimal separator |
 | `+` `-` `*` `/` | Operators |
 | `Enter` or `=` | Equals |
-| `%` | Percent |
-| `@` | Square root |
+| `%` | Percent (Standard) / Mod (Scientific) |
+| `@` | Square root (Standard) / x^2 (Scientific) |
 | `R` | 1/x |
 | `F9` | +/- |
 | `Backspace` | Backspace |
@@ -91,16 +99,29 @@ Until the installer exists, keep the original calculator untouched:
 | `Ctrl+L` / `Ctrl+R` / `Ctrl+M` / `Ctrl+P` | MC / MR / MS / M+ |
 | `Ctrl+C` / `Ctrl+V` | Copy / Paste |
 
+Scientific mode adds:
+
+| Key | Function | Key | Function |
+|---|---|---|---|
+| `S` `O` `T` | sin, cos, tan | `(` `)` | Parentheses |
+| `N` `L` | ln, log | `&` `\|` `^` | And, Or, Xor |
+| `Y` `#` `!` | x^y, x^3, n! | `<` `~` `;` | Lsh, Not, Int |
+| `M` `X` `V` `P` | dms, Exp, F-E, PI | `A`–`F` | Hex digits |
+| `I` `H` | Inv, Hyp | `F5` `F6` `F7` `F8` | Hex, Dec, Oct, Bin |
+| `Ctrl+S` | Statistics box | `F2` `F3` `F4` | Dword/Word/Byte or Deg/Rad/Grad |
+| `Ctrl+A` `Ctrl+T` `Ctrl+D` | Ave, Sum, s | `Ins` | Dat |
+
 ## Project layout
 
 ```
 src/
-  engine.c, engine.h    Calculator logic (no Windows dependencies)
+  engine.c, engine.h    Standard mode logic (no Windows dependencies)
+  sci.c, sci.h          Scientific mode logic (no Windows dependencies)
   calc.c                Window, painting, mouse, keyboard, clipboard
   calc.rc.utf8          Menus and strings (EN/ES), converted to CP1252 at build time
   resource.h            Resource identifiers
 tools/make_icon.py      Generates the fallback 32x32, 16-color icon
-test/test_engine.c      Host-side engine tests
+test/test_*.c           Host-side engine tests
 build.sh                Build script (Open Watcom v2)
 ```
 
