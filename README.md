@@ -9,6 +9,12 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
   <sub>Right: captured on a real 486 running Windows 3.1 in Spanish. Left: the same capture with the English UI texts.</sub>
 </p>
 
+<p align="center">
+  <img src="docs/screenshot-sci-en-es.png" alt="Scientific mode in English and in Spanish: number base and angle radio buttons, Inv and Hyp check boxes, and a keypad with statistics, function, memory, digit and logic keys" width="720">
+  <br>
+  <sub>Scientific mode, rendered pixel by pixel from the app's layout and the Windows 3.1 fonts (not a capture).</sub>
+</p>
+
 ### Highlights
 
 - **Windows 95 look, inside Windows 3.1.** Windows 3.1 draws the window frame and menu bar. The client area is custom-painted: 3D bevelled buttons, MS Sans Serif 8 pt, and blue/red/navy key labels.
