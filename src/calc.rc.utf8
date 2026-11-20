@@ -63,7 +63,7 @@ END
 
 /* Statistics box (modeless): Windows 95 layout, thin border and native Windows 3.1 buttons. */
 STATBOX DIALOG 0, 0, 144, 84
-STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_VISIBLE
+STYLE WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION ""
 FONT 8, "Helv"
 BEGIN

@@ -210,7 +210,8 @@ static char       g_backLabel[24];
 static int        g_pressed = -1;     /* index of the button pressed with the mouse */
 static int        g_pressedIn = 0;    /* the cursor is still over it */
 static HWND       g_statBox = NULL;
-static int        g_statUsed;      /* the Statistics box has been opened at least once */
+static int        g_statUsed;
+static int        g_statX, g_statY, g_statPlaced;   /* last position of the Statistics box */      /* the Statistics box has been opened at least once */
 static int        g_startSci;      /* view at startup, to save WIN.INI only if it changed */
 static FARPROC    g_statProc = NULL;
 
@@ -711,8 +712,8 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         sel = (int)SendDlgItemMessage(dlg, IDC_STATLIST, LB_GETCURSEL, 0, 0);
         switch (wp) {
         case IDOK:
-        case IDC_RET:      /* like the original: close the box, back to the calculator */
-            DestroyWindow(dlg);
+        case IDC_RET:      /* like the original: back to the calculator, the box stays behind */
+            BringWindowToTop(g_hwnd);
             SetActiveWindow(g_hwnd);
             return TRUE;
         case IDC_LOAD:
@@ -731,9 +732,14 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         }
         break;
 
-    case WM_DESTROY:
+    case WM_DESTROY: {
+        RECT r;
+        GetWindowRect(dlg, &r);            /* reopen it where the user left it */
+        g_statX = r.left; g_statY = r.top; g_statPlaced = 1;
+        sci_stat_clear_all(&g_sci);        /* closing the box discards the data */
         if (g_statBox == dlg) g_statBox = NULL;
         return TRUE;
+    }
     }
     return FALSE;
 }
@@ -750,14 +756,20 @@ static void OpenStatBox(void)
     HWND box;
     if (StatBoxOpen()) { ShowWindow(g_statBox, SW_SHOW); StatRefresh(); return; }
     if (!g_statProc) g_statProc = MakeProcInstance((FARPROC)StatProc, g_hInst);
-    box = CreateDialog(g_hInst, "STATBOX", g_hwnd, (DLGPROC)g_statProc);
+    /* not owned by the calculator, so it can go behind it (RET) */
+    box = CreateDialog(g_hInst, "STATBOX", NULL, (DLGPROC)g_statProc);
     if (!box) return;
     g_statBox = box;
     g_statUsed = 1;
-    /* same place as in Windows 95: over the left part of the calculator */
-    GetWindowRect(g_hwnd, &wr);
-    SetWindowPos(box, NULL, wr.left + 57, wr.top + 105, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    /* created hidden, placed, then shown: first time over the left part of the
+     * calculator (as in Windows 95), afterwards where the user left it */
+    if (!g_statPlaced) {
+        GetWindowRect(g_hwnd, &wr);
+        g_statX = wr.left + 57; g_statY = wr.top + 105;
+    }
+    SetWindowPos(box, NULL, g_statX, g_statY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
     StatRefresh();
+    ShowWindow(box, SW_SHOW);
 }
 
 /* ---------- Key dispatch ---------- */
@@ -769,9 +781,11 @@ static void Press(HWND hwnd, int key)
         return;
     }
     if (key == K_STA) { OpenStatBox(); return; }
-    if ((key == K_AVE || key == K_SUM || key == K_SDEV || key == K_DAT) && !g_statUsed) {
-        MessageBeep(0);   /* like the original: inactive until Sta has been used once */
-        return;
+    if (key == K_AVE || key == K_SUM || key == K_SDEV || key == K_DAT) {
+        /* like the original: they beep until Sta has been used once, and do
+         * nothing while the Statistics box is closed */
+        if (!g_statUsed) { MessageBeep(0); return; }
+        if (!StatBoxOpen()) return;
     }
     if (!sci_key_valid(&g_sci, key)) { MessageBeep(0); return; }
     sci_key(&g_sci, key);
