@@ -210,6 +210,7 @@ static char       g_backLabel[24];
 static int        g_pressed = -1;     /* index of the button pressed with the mouse */
 static int        g_pressedIn = 0;    /* the cursor is still over it */
 static HWND       g_statBox = NULL;
+static int        g_startSci;      /* view at startup, to save WIN.INI only if it changed */
 static FARPROC    g_statProc = NULL;
 
 static void LoadStr(int id, char *buf, int len)
@@ -604,12 +605,13 @@ static int HitControl(int x, int y)
 }
 
 /* ---------- Statistics box ---------- */
+static int StatBoxOpen(void);
 static void StatRefresh(void)
 {
     char buf[80], fmt[16];
     int i;
     HWND list;
-    if (!g_statBox) return;
+    if (!StatBoxOpen()) return;
     list = GetDlgItem(g_statBox, IDC_STATLIST);
     SendMessage(list, WM_SETREDRAW, FALSE, 0);
     SendMessage(list, LB_RESETCONTENT, 0, 0);
@@ -626,27 +628,98 @@ static void StatRefresh(void)
     SetDlgItemText(g_statBox, IDC_STATN, buf);
 }
 
+/* Windows 95-style push button for the Statistics box (owner-drawn) */
+static void DrawStatButton(const DRAWITEMSTRUCT FAR *di)
+{
+    HDC hdc = di->hDC;
+    RECT r = di->rcItem;
+    char text[32];
+    int down = (di->itemState & ODS_SELECTED) != 0;
+    int x, y, w, h;
+    HFONT old;
+
+    FillRect(hdc, &r, g_brFace);
+    if (di->CtlID == IDC_RET) {          /* default button: extra black outline */
+        Frame(hdc, r.left, r.top, r.right - r.left, r.bottom - r.top, C_DARK, C_DARK);
+        InflateRect(&r, -1, -1);
+    }
+    x = r.left; y = r.top; w = r.right - r.left; h = r.bottom - r.top;
+    if (down) {
+        Frame(hdc, x, y, w, h, C_SHADOW, C_SHADOW);
+    } else {
+        Frame(hdc, x, y, w, h, C_LIGHT, C_DARK);
+        Frame(hdc, x + 1, y + 1, w - 2, h - 2, C_FACE, C_SHADOW);
+    }
+    GetWindowText(di->hwndItem, text, sizeof(text));
+    old = SelectObject(hdc, g_font);
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, C_DARK);
+    if (down) OffsetRect(&r, 1, 1);
+    DrawText(hdc, text, -1, &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    if (di->itemState & ODS_FOCUS) {
+        RECT f = r;
+        InflateRect(&f, -3, -3);
+        DrawFocusRect(hdc, &f);
+    }
+    SelectObject(hdc, old);
+}
+
 BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
     int sel;
     char buf[64];
-    (void)lp;
 
     switch (msg) {
-    case WM_INITDIALOG:
+    case WM_INITDIALOG: {
+        RECT lr;
+        HWND list = GetDlgItem(dlg, IDC_STATLIST);
+        g_statBox = dlg;
         LoadStr(IDS_STAT_TITLE, buf, sizeof(buf));
         SetWindowText(dlg, buf);
         SetDlgStr(dlg, IDC_RET, IDS_STAT_RET);
         SetDlgStr(dlg, IDC_LOAD, IDS_STAT_LOAD);
         SetDlgStr(dlg, IDC_CD, IDS_STAT_CD);
         SetDlgStr(dlg, IDC_CAD, IDS_STAT_CAD);
+        SendDlgItemMessage(dlg, IDC_STATLIST, WM_SETFONT, (WPARAM)g_font, 0);
+        SendDlgItemMessage(dlg, IDC_STATN, WM_SETFONT, (WPARAM)g_font, 0);
+        /* leave 2 px around the list for the Windows 95 sunken border */
+        GetWindowRect(list, &lr);
+        ScreenToClient(dlg, (POINT FAR *)&lr.left);
+        ScreenToClient(dlg, (POINT FAR *)&lr.right);
+        MoveWindow(list, lr.left + 2, lr.top + 2, lr.right - lr.left - 4, lr.bottom - lr.top - 4, FALSE);
+        return TRUE;
+    }
+
+    case WM_CTLCOLOR:   /* grey dialog background, like Windows 95 */
+        if (HIWORD(lp) == CTLCOLOR_DLG || HIWORD(lp) == CTLCOLOR_STATIC || HIWORD(lp) == CTLCOLOR_BTN) {
+            SetBkColor((HDC)wp, C_FACE);
+            return (BOOL)g_brFace;
+        }
+        return FALSE;
+
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        RECT lr;
+        HDC hdc = BeginPaint(dlg, &ps);
+        GetWindowRect(GetDlgItem(dlg, IDC_STATLIST), &lr);
+        ScreenToClient(dlg, (POINT FAR *)&lr.left);
+        ScreenToClient(dlg, (POINT FAR *)&lr.right);
+        InflateRect(&lr, 2, 2);
+        Sunken(hdc, &lr, C_LIGHT);
+        EndPaint(dlg, &ps);
+        return TRUE;
+    }
+
+    case WM_DRAWITEM:
+        DrawStatButton((const DRAWITEMSTRUCT FAR *)lp);
         return TRUE;
 
     case WM_COMMAND:
         sel = (int)SendDlgItemMessage(dlg, IDC_STATLIST, LB_GETCURSEL, 0, 0);
         switch (wp) {
+        case IDOK:
         case IDC_RET:
-            SetFocus(g_hwnd);
+            SetActiveWindow(g_hwnd);
             return TRUE;
         case IDC_LOAD:
             if (sel >= 0) { sci_stat_load(&g_sci, sel); Refresh(g_hwnd); }
@@ -665,24 +738,31 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         break;
 
     case WM_DESTROY:
-        g_statBox = NULL;
+        if (g_statBox == dlg) g_statBox = NULL;
         return TRUE;
     }
     return FALSE;
 }
 
+static int StatBoxOpen(void)
+{
+    if (g_statBox && !IsWindow(g_statBox)) g_statBox = NULL;
+    return g_statBox != NULL;
+}
+
 static void OpenStatBox(void)
 {
     RECT wr;
-    if (g_statBox) { ShowWindow(g_statBox, SW_SHOW); StatRefresh(); return; }
+    HWND box;
+    if (StatBoxOpen()) { ShowWindow(g_statBox, SW_SHOW); StatRefresh(); return; }
     if (!g_statProc) g_statProc = MakeProcInstance((FARPROC)StatProc, g_hInst);
-    g_statBox = CreateDialog(g_hInst, "STATBOX", g_hwnd, (DLGPROC)g_statProc);
-    if (!g_statBox) return;
+    box = CreateDialog(g_hInst, "STATBOX", g_hwnd, (DLGPROC)g_statProc);
+    if (!box) return;
+    g_statBox = box;
     /* same place as in Windows 95: over the left part of the calculator */
     GetWindowRect(g_hwnd, &wr);
-    SetWindowPos(g_statBox, NULL, wr.left + 57, wr.top + 105, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    SetWindowPos(box, NULL, wr.left + 57, wr.top + 105, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     StatRefresh();
-    SetFocus(g_hwnd);
 }
 
 /* ---------- Key dispatch ---------- */
@@ -694,10 +774,6 @@ static void Press(HWND hwnd, int key)
         return;
     }
     if (key == K_STA) { OpenStatBox(); return; }
-    if ((key == K_AVE || key == K_SUM || key == K_SDEV || key == K_DAT) && !g_statBox) {
-        MessageBeep(0);   /* statistics keys work while the Statistics box is open */
-        return;
-    }
     if (!sci_key_valid(&g_sci, key)) { MessageBeep(0); return; }
     sci_key(&g_sci, key);
     if (key == K_DAT || key == K_HEX || key == K_DECBASE || key == K_OCT || key == K_BIN ||
@@ -727,7 +803,7 @@ static void ApplyView(HWND hwnd, int sci)
     g_pressed = -1;
     CheckMenuItem(menu, IDM_STANDARD, MF_BYCOMMAND | (sci ? MF_UNCHECKED : MF_CHECKED));
     CheckMenuItem(menu, IDM_SCIENTIFIC, MF_BYCOMMAND | (sci ? MF_CHECKED : MF_UNCHECKED));
-    if (!sci && g_statBox) DestroyWindow(g_statBox);
+    if (!sci && StatBoxOpen()) DestroyWindow(g_statBox);
     SetClientSize(hwnd, sci ? SCIVIEW_W : STD_W, sci ? SCIVIEW_H : STD_H);
     InvalidateRect(hwnd, NULL, FALSE);
 }
@@ -742,7 +818,6 @@ static void SwitchView(HWND hwnd, int sci)
         if (!g_sci.err) eng_set_value(&g_eng, sci_value(&g_sci));
         g_eng.mem = g_sci.mem;
     }
-    WriteProfileString("SciCalc", "layout", sci ? "0" : "1");
     ApplyView(hwnd, sci);
 }
 
@@ -960,7 +1035,9 @@ LRESULT CALLBACK __export WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         return 0;
 
     case WM_DESTROY:
-        if (g_statBox) DestroyWindow(g_statBox);
+        if (g_isSci != g_startSci)
+            WriteProfileString("SciCalc", "layout", g_isSci ? "0" : "1");
+        if (StatBoxOpen()) DestroyWindow(g_statBox);
         PostQuitMessage(0);
         return 0;
     }
@@ -1025,7 +1102,8 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
 
     /* Restores the last view; also corrects the window size, since
      * AdjustWindowRect can be off by a pixel with a menu bar on Windows 3.1. */
-    ApplyView(g_hwnd, GetProfileInt("SciCalc", "layout", 1) == 0);
+    g_startSci = GetProfileInt("SciCalc", "layout", 1) == 0;
+    ApplyView(g_hwnd, g_startSci);
     ShowWindow(g_hwnd, show);
     UpdateWindow(g_hwnd);
 
