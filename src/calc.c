@@ -754,7 +754,13 @@ static void OpenStatBox(void)
 {
     RECT wr;
     HWND box;
-    if (StatBoxOpen()) { ShowWindow(g_statBox, SW_SHOW); StatRefresh(); return; }
+    if (StatBoxOpen()) {   /* already open (maybe behind, after RET): bring it back */
+        ShowWindow(g_statBox, SW_SHOW);
+        BringWindowToTop(g_statBox);
+        SetActiveWindow(g_statBox);
+        StatRefresh();
+        return;
+    }
     if (!g_statProc) g_statProc = MakeProcInstance((FARPROC)StatProc, g_hInst);
     /* not owned by the calculator, so it can go behind it (RET) */
     box = CreateDialog(g_hInst, "STATBOX", NULL, (DLGPROC)g_statProc);
