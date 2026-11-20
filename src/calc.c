@@ -210,6 +210,7 @@ static char       g_backLabel[24];
 static int        g_pressed = -1;     /* index of the button pressed with the mouse */
 static int        g_pressedIn = 0;    /* the cursor is still over it */
 static HWND       g_statBox = NULL;
+static int        g_statUsed;      /* the Statistics box has been opened at least once */
 static int        g_startSci;      /* view at startup, to save WIN.INI only if it changed */
 static FARPROC    g_statProc = NULL;
 
@@ -718,7 +719,8 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         sel = (int)SendDlgItemMessage(dlg, IDC_STATLIST, LB_GETCURSEL, 0, 0);
         switch (wp) {
         case IDOK:
-        case IDC_RET:
+        case IDC_RET:      /* like the original: close the box, back to the calculator */
+            DestroyWindow(dlg);
             SetActiveWindow(g_hwnd);
             return TRUE;
         case IDC_LOAD:
@@ -759,6 +761,7 @@ static void OpenStatBox(void)
     box = CreateDialog(g_hInst, "STATBOX", g_hwnd, (DLGPROC)g_statProc);
     if (!box) return;
     g_statBox = box;
+    g_statUsed = 1;
     /* same place as in Windows 95: over the left part of the calculator */
     GetWindowRect(g_hwnd, &wr);
     SetWindowPos(box, NULL, wr.left + 57, wr.top + 105, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
@@ -774,6 +777,10 @@ static void Press(HWND hwnd, int key)
         return;
     }
     if (key == K_STA) { OpenStatBox(); return; }
+    if ((key == K_AVE || key == K_SUM || key == K_SDEV || key == K_DAT) && !g_statUsed) {
+        MessageBeep(0);   /* like the original: inactive until Sta has been used once */
+        return;
+    }
     if (!sci_key_valid(&g_sci, key)) { MessageBeep(0); return; }
     sci_key(&g_sci, key);
     if (key == K_DAT || key == K_HEX || key == K_DECBASE || key == K_OCT || key == K_BIN ||
