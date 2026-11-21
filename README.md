@@ -7,15 +7,15 @@ In Windows 3.1, most built-in programs share the same look: grey push buttons, M
 A native 16-bit (Win16) program written in C, tested on a real 486.
 
 <p align="center">
-  <img src="docs/before-after-standard.png" alt="Standard mode, before and after: on the left the original Windows 3.1 Calculator with outlined keys on a white background; on the right the new one with grey Windows 3.1 push buttons and a framed white display" width="548">
+  <img src="docs/before-after-standard.png" alt="Standard mode, before and after: on the left the original Windows 3.1 Calculator with outlined keys on a white background; on the right the new one with grey Windows 3.1 push buttons and a framed white display" width="538">
   <br>
-  <sub>Standard mode. Left: the original Windows 3.1 Calculator. Right: the new one, rendered pixel by pixel from the app's layout and the Windows 3.1 fonts (not a capture).</sub>
+  <sub>Standard mode. Left: the original Windows 3.1 Calculator. Right: the new Calculator 2.0, scaled to the same window size. Both are screenshots taken in 16 colors.</sub>
 </p>
 
 <p align="center">
   <img src="docs/before-after-scientific.png" alt="Scientific mode, before and after: on the left the original Windows 3.1 Calculator; on the right the new one with framed groups of radio buttons, Inv and Hyp check boxes and grey push buttons" width="760">
   <br>
-  <sub>Scientific mode. Left: the original Windows 3.1 Calculator. Right: the new one, rendered the same way (not a capture).</sub>
+  <sub>Scientific mode. Left: the original Windows 3.1 Calculator. Right: the new Calculator 2.0, scaled to the same window size. Both are screenshots taken in 16 colors.</sub>
 </p>
 
 ### Highlights
