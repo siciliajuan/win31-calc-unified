@@ -1,12 +1,15 @@
-# win31-calc95
+# win31-calc-unified
 
-**The Windows 95 calculator look, on Windows 3.1.**
-A native 16-bit (Win16) calculator written in C that brings the 1995 interface back to 1992, ready for real 486 hardware.
+**A Windows 3.1 Calculator that matches the rest of Windows 3.1.**
+
+In Windows 3.1, most built-in programs share the same look: grey push buttons, MS Sans Serif dialog text and standard controls. Calculator kept its own design, with a white background and rounded keys. win31-calc-unified redesigns it to fit in with the rest of the system: it takes the look of the Windows 3.1 controls and the colors of the user's scheme. Its layout and behavior follow the Windows 95 Calculator, the version that brought Calculator in line with that design.
+
+A native 16-bit (Win16) program written in C, tested on a real 486.
 
 <p align="center">
-  <img src="docs/screenshot-en-es.png" alt="The calculator in English and in Spanish on Windows 3.1: a grey Windows 95-style keypad with bold blue digits, red operators and maroon Back/CE/C keys, inside a native Windows 3.1 window" width="560">
+  <img src="docs/screenshot-en-es.png" alt="Standard mode in English and in Spanish: a grey keypad of Windows 3.1 push buttons with blue digits, red operators and maroon Back/CE/C keys, and a white display with a black frame" width="560">
   <br>
-  <sub>Right: captured on a real 486 running Windows 3.1 in Spanish. Left: the same capture with the English UI texts.</sub>
+  <sub>Standard mode in English and Spanish, rendered pixel by pixel from the app's layout and the Windows 3.1 fonts (not a capture).</sub>
 </p>
 
 <p align="center">
@@ -17,8 +20,9 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
 
 ### Highlights
 
-- **Windows 95 look, inside Windows 3.1.** Windows 3.1 draws the window frame and menu bar. The client area is custom-painted: 3D bevelled buttons, MS Sans Serif 8 pt, and blue/red/navy key labels.
-- **VGA-friendly.** Only the 16 standard VGA colors are used, so it looks right on a plain VGA card without a 256-color driver.
+- **Looks like the rest of Windows 3.1.** Windows 3.1 push buttons, black-framed display and groups, Windows 3.1 radio buttons and check boxes, and the bold MS Sans Serif dialog font.
+- **Follows your color scheme.** Button faces, shadows, frames, windows and text use the colors set in Control Panel › Color, and update when they change. Only the key labels keep their blue/red/purple colors, which tell digits, operators and functions apart.
+- **VGA-friendly.** With the default scheme it uses only the 16 standard VGA colors, so it looks right without a 256-color driver.
 - **Speaks your language.** English by default, Spanish when Windows is set to Spanish. The decimal separator follows the regional settings.
 - **Small and dependency-free.** One ~32 KB executable that needs no math coprocessor and imports only system DLLs.
 
@@ -29,16 +33,17 @@ A native 16-bit (Win16) calculator written in C that brings the 1995 interface b
 | 1 | Standard mode, English/Spanish localization | Done, tested on a real 486 |
 | 2 | Scientific mode | Done, tested on a real 486 |
 | 3 | Setup and uninstall floppy (1.44 MB image) | Done, tested |
+| 4 | Redesign with Windows 3.1 controls and system colors (version 2.0) | Done, awaiting tests on real hardware |
 
 ## Features
 
-- Standard mode with Windows 95 behavior:
+- Standard mode, behaving like the Windows 95 Calculator:
   - chained left-to-right evaluation and repeatable `=`;
   - `%` relative to the accumulator;
   - `sqrt` and `1/x`;
   - Back (backspace), CE and C;
   - MC/MR/MS/M+ memory with an "M" indicator.
-- Scientific mode with Windows 95 behavior (View › Scientific):
+- Scientific mode, behaving like the Windows 95 Calculator (View › Scientific):
   - operator precedence (`2 + 3 * 4 = 14`) and up to 25 levels of parentheses, with a `(=n` indicator;
   - Hex/Dec/Oct/Bin with Dword/Word/Byte word sizes (two's complement), and Deg/Rad/Grad angles;
   - `sin` `cos` `tan` `ln` `log` `x^y` `x^2` `x^3` `n!` `1/x` `dms` `Exp` `F-E` `PI`, with `Inv` and `Hyp`;
@@ -73,7 +78,7 @@ export INCLUDE=$WATCOM/h:$WATCOM/h/win
 `build.sh` writes `CALC.EXE`, `SETUP.EXE` and `UNINSTAL.EXE` to `build/`. To make the floppy image and the zip (needs `mtools` and `zip`):
 
 ```sh
-./tools/make_floppy.sh      # build/dist/CALC95.IMG and build/dist/calc95-disk.zip
+./tools/make_floppy.sh      # build/dist/win31-calc-unified-2.0.img and .zip
 ```
 
 Engine tests run on the host with any C compiler:
@@ -86,12 +91,12 @@ gcc -I../src test_sci.c ../src/sci.c -lm -o test_sci && ./test_sci
 
 ## Installing on Windows 3.1
 
-Download `CALC95.IMG` (a 1.44 MB floppy image) or `calc95-disk.zip` from the Releases page, write it to a floppy disk or copy the files to any folder, and run `SETUP.EXE` from File Manager or Program Manager (File › Run).
+Download `win31-calc-unified-2.0.img` (a 1.44 MB floppy image) or `win31-calc-unified-2.0.zip` from the Releases page, write it to a floppy disk or copy the files to any folder, and run `SETUP.EXE` from File Manager or Program Manager (File › Run).
 
 Setup:
 
 1. renames the original `<WINDOWS>\CALC.EXE` to `CALC31.EXE` (if it is already this calculator, it is only updated);
-2. copies the new calculator as `<WINDOWS>\CALC.EXE`;
+2. copies the new calculator (`CALCNEW.EXE` on the disk) as `<WINDOWS>\CALC.EXE`;
 3. replaces the Calculator icon in Program Manager in place, using the original Calculator icon (the calculator also uses it when minimized);
 4. records what it changed in `WIN.INI [Calc95]`.
 
@@ -100,7 +105,7 @@ Setup:
 Notes:
 
 - Both programs ask you to close Calculator first, and Setup never overwrites an existing `CALC31.EXE`.
-- The calculator's module name is `CALC95`, so it can run next to the original (`CALC31.EXE`).
+- The calculator's module name is `CALC95` (kept from earlier versions so Setup recognizes them), so it can run next to the original (`CALC31.EXE`).
 
 ## Keyboard
 

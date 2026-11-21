@@ -17,10 +17,16 @@
 #include "resource.h"
 
 /* ---------- VGA palette ---------- */
-#define C_FACE    RGB(192,192,192)
-#define C_SHADOW  RGB(128,128,128)
-#define C_LIGHT   RGB(255,255,255)
-#define C_DARK    RGB(0,0,0)
+/* System colors (Control Panel › Color), reloaded on WM_SYSCOLORCHANGE.
+ * Only the key labels keep fixed colors, which carry meaning. */
+static COLORREF g_cFace, g_cShadow, g_cLight, g_cFrame, g_cWindow, g_cWinText, g_cBtnText;
+#define C_FACE    g_cFace       /* COLOR_BTNFACE      */
+#define C_SHADOW  g_cShadow     /* COLOR_BTNSHADOW    */
+#define C_LIGHT   g_cLight      /* COLOR_BTNHIGHLIGHT */
+#define C_DARK    g_cFrame      /* COLOR_WINDOWFRAME  */
+#define C_WINDOW  g_cWindow     /* COLOR_WINDOW       */
+#define C_WINTEXT g_cWinText    /* COLOR_WINDOWTEXT   */
+#define C_BTNTEXT g_cBtnText    /* COLOR_BTNTEXT      */
 #define C_RED     RGB(255,0,0)
 #define C_BLUE    RGB(0,0,255)
 #define C_NAVY    RGB(0,0,128)
@@ -199,9 +205,10 @@ static SciEngine  g_sci;
 static int        g_isSci;
 static Button    *g_buttons;
 static int        g_nButtons;
-static HFONT      g_font;      /* display and labels: MS Sans Serif 8 pt */
+static HFONT      g_font;      /* display, labels and boxes: MS Sans Serif 8 pt bold,
+                                  the Windows 3.1 dialog font */
 static HFONT      g_btnFont;   /* keys: MS Sans Serif 10 pt bold */
-static HBRUSH     g_brFace, g_brShadow, g_brLight, g_brDark;
+static HBRUSH     g_brFace, g_brShadow, g_brLight, g_brDark, g_brWindow;
 static int        g_strBase = STR_BASE_EN;
 static char       g_dec = '.';
 static char       g_decLabel[2] = ".";
@@ -328,6 +335,35 @@ static void ShowAbout(HWND hwnd)
     FreeProcInstance(proc);
 }
 
+/* ---------- System colors ---------- */
+static HBITMAP g_radioBmp[2];
+
+static void FreeSysColors(void)
+{
+    if (g_brFace) { DeleteObject(g_brFace); DeleteObject(g_brShadow); DeleteObject(g_brLight);
+                    DeleteObject(g_brDark); DeleteObject(g_brWindow); }
+    if (g_radioBmp[0]) DeleteObject(g_radioBmp[0]);
+    if (g_radioBmp[1]) DeleteObject(g_radioBmp[1]);
+    g_radioBmp[0] = g_radioBmp[1] = NULL;
+}
+
+static void LoadSysColors(void)
+{
+    FreeSysColors();
+    g_cFace = GetSysColor(COLOR_BTNFACE);
+    g_cShadow = GetSysColor(COLOR_BTNSHADOW);
+    g_cLight = GetSysColor(COLOR_BTNHIGHLIGHT);
+    g_cFrame = GetSysColor(COLOR_WINDOWFRAME);
+    g_cWindow = GetSysColor(COLOR_WINDOW);
+    g_cWinText = GetSysColor(COLOR_WINDOWTEXT);
+    g_cBtnText = GetSysColor(COLOR_BTNTEXT);
+    g_brFace = CreateSolidBrush(g_cFace);
+    g_brShadow = CreateSolidBrush(g_cShadow);
+    g_brLight = CreateSolidBrush(g_cLight);
+    g_brDark = CreateSolidBrush(g_cFrame);
+    g_brWindow = CreateSolidBrush(g_cWindow);
+}
+
 /* ---------- Drawing ---------- */
 static void FillSolid(HDC hdc, int x, int y, int w, int h, COLORREF c)
 {
@@ -337,6 +373,7 @@ static void FillSolid(HDC hdc, int x, int y, int w, int h, COLORREF c)
     else if (c == C_SHADOW) br = g_brShadow;
     else if (c == C_LIGHT) br = g_brLight;
     else if (c == C_DARK) br = g_brDark;
+    else if (c == C_WINDOW) br = g_brWindow;
     else br = own = CreateSolidBrush(c);
     r.left = x; r.top = y; r.right = x + w; r.bottom = y + h;
     FillRect(hdc, &r, br);
@@ -352,20 +389,17 @@ static void Frame(HDC hdc, int x, int y, int w, int h, COLORREF tl, COLORREF br)
     FillSolid(hdc, x + w - 1, y, 1, h, br);
 }
 
-static void Sunken(HDC hdc, const RECT *r, COLORREF fill)
+/* Windows 3.1 control styles: 1 px black frames, like edit boxes and group boxes */
+static void Boxed(HDC hdc, const RECT *r, COLORREF fill)
 {
     int x = r->left, y = r->top, w = r->right - r->left, h = r->bottom - r->top;
-    FillSolid(hdc, x + 2, y + 2, w - 4, h - 4, fill);
-    Frame(hdc, x, y, w, h, C_SHADOW, C_LIGHT);
-    Frame(hdc, x + 1, y + 1, w - 2, h - 2, C_DARK, C_FACE);
+    FillSolid(hdc, x + 1, y + 1, w - 2, h - 2, fill);
+    Frame(hdc, x, y, w, h, C_DARK, C_DARK);
 }
 
-/* Etched group frame (gray line with a white line inside/below) */
-static void Etched(HDC hdc, const RECT *r)
+static void GroupFrame(HDC hdc, const RECT *r)
 {
-    int x = r->left, y = r->top, w = r->right - r->left, h = r->bottom - r->top;
-    Frame(hdc, x + 1, y + 1, w - 1, h - 1, C_LIGHT, C_LIGHT);
-    Frame(hdc, x, y, w - 1, h - 1, C_SHADOW, C_SHADOW);
+    Frame(hdc, r->left, r->top, r->right - r->left, r->bottom - r->top, C_DARK, C_DARK);
 }
 
 static void DrawButton(HDC hdc, int i)
@@ -378,13 +412,21 @@ static void DrawButton(HDC hdc, int i)
     if (b->key == K_BACK) label = g_backLabel;
     else if (b->key == K_DECIMAL) label = g_decLabel;
 
+    /* Windows 3.1 push button: black frame with rounded corners, white
+     * highlight and 2 px grey shadow; pressed, a grey shadow at the top left */
     FillSolid(hdc, b->x, b->y, b->w, b->h, C_FACE);
-    if (down) {   /* pressed: sunken edge, as in Windows 95 */
-        Frame(hdc, b->x, b->y, b->w, b->h, C_DARK, C_LIGHT);
-        Frame(hdc, b->x + 1, b->y + 1, b->w - 2, b->h - 2, C_SHADOW, C_FACE);
+    FillSolid(hdc, b->x + 1, b->y, b->w - 2, 1, C_DARK);
+    FillSolid(hdc, b->x + 1, b->y + b->h - 1, b->w - 2, 1, C_DARK);
+    FillSolid(hdc, b->x, b->y + 1, 1, b->h - 2, C_DARK);
+    FillSolid(hdc, b->x + b->w - 1, b->y + 1, 1, b->h - 2, C_DARK);
+    if (down) {
+        FillSolid(hdc, b->x + 1, b->y + 1, b->w - 2, 1, C_SHADOW);
+        FillSolid(hdc, b->x + 1, b->y + 1, 1, b->h - 2, C_SHADOW);
     } else {
-        Frame(hdc, b->x, b->y, b->w, b->h, C_LIGHT, C_DARK);
-        Frame(hdc, b->x + 1, b->y + 1, b->w - 2, b->h - 2, C_FACE, C_SHADOW);
+        FillSolid(hdc, b->x + 1, b->y + 1, b->w - 3, 1, C_LIGHT);
+        FillSolid(hdc, b->x + 1, b->y + 1, 1, b->h - 3, C_LIGHT);
+        FillSolid(hdc, b->x + 2, b->y + b->h - 3, b->w - 3, 2, C_SHADOW);
+        FillSolid(hdc, b->x + b->w - 3, b->y + 2, 2, b->h - 3, C_SHADOW);
     }
 
     r.left = b->x + (down ? 1 : 0);
@@ -416,40 +458,39 @@ static void DrawDisplay(HDC hdc)
     } else {
         eng_display(&g_eng, g_dec, text, sizeof(text));
     }
-    Sunken(hdc, rc, C_LIGHT);
+    Boxed(hdc, rc, C_WINDOW);
     r.right -= 8;
-    SetTextColor(hdc, C_DARK);
+    SetTextColor(hdc, C_WINTEXT);
     DrawText(hdc, text, -1, &r, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
 }
 
 static void DrawBox(HDC hdc, const RECT *rc, const char *text)
 {
     RECT r = *rc;
-    Sunken(hdc, rc, C_FACE);
+    Boxed(hdc, rc, C_FACE);
     if (text && *text) {
-        SetTextColor(hdc, C_DARK);
+        SetTextColor(hdc, C_BTNTEXT);
         DrawText(hdc, text, -1, &r, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
     }
 }
 
-/* 12x12 Windows 95-style radio button, cached in two bitmaps (SetPixel is slow) */
-static HBITMAP g_radioBmp[2];
+/* 12x12 Windows 3.1-style radio button, cached in two bitmaps (SetPixel is slow) */
 
 static void BuildRadio(HDC ref, int on)
 {
     static const char *map[12] = {
-        "....GGGG....",
-        "..GGKKKKGG..",
-        ".GKKWWWWKKL.",
-        ".GKWWWWWWFL.",
-        "GKWWWWWWWWFL",
-        "GKWWWWWWWWFL",
-        "GKWWWWWWWWFL",
-        "GKWWWWWWWWFL",
-        ".GKWWWWWWFL.",
-        ".LFFWWWWFFL.",
-        "..LLFFFFLL..",
-        "....LLLL....",
+        "....KKKK....",
+        "..KKWWWWKK..",
+        ".KWWWWWWWWK.",
+        ".KWWWWWWWWK.",
+        "KWWWWWWWWWWK",
+        "KWWWWWWWWWWK",
+        "KWWWWWWWWWWK",
+        "KWWWWWWWWWWK",
+        ".KWWWWWWWWK.",
+        ".KWWWWWWWWK.",
+        "..KKWWWWKK..",
+        "....KKKK....",
     };
     HDC mem = CreateCompatibleDC(ref);
     HBITMAP old;
@@ -460,14 +501,13 @@ static void BuildRadio(HDC ref, int on)
         for (j = 0; j < 12; j++) {
             COLORREF c;
             switch (map[i][j]) {
-            case 'G': c = C_SHADOW; break;
             case 'K': c = C_DARK; break;
-            case 'W': case 'L': c = C_LIGHT; break;
-            default: c = C_FACE; break;     /* 'F' and the corners */
+            case 'W': c = C_WINDOW; break;
+            default: c = C_FACE; break;     /* the corners */
             }
             if (on && i >= 4 && i <= 7 && j >= 4 && j <= 7 &&
                 !((i == 4 || i == 7) && (j == 4 || j == 7)))
-                c = C_DARK;
+                c = C_WINTEXT;
             SetPixel(mem, j, i, c);
         }
     }
@@ -487,20 +527,18 @@ static void DrawRadio(HDC hdc, int x, int y, int on)
     DeleteDC(mem);
 }
 
-/* 13x13 Windows 95-style check box */
+/* 13x13 Windows 3.1-style check box: black frame, an X when checked */
 static void DrawCheck(HDC hdc, int x, int y, int on)
 {
     RECT r;
     r.left = x; r.top = y; r.right = x + 13; r.bottom = y + 13;
-    Sunken(hdc, &r, C_LIGHT);
+    Boxed(hdc, &r, C_WINDOW);
     if (on) {
-        static const char *mark[7] = {
-            "......#", ".....##", "#...###", "##.###.", "#####..", ".###...", "..#....",
-        };
-        int i, j;
-        for (i = 0; i < 7; i++)
-            for (j = 0; j < 7; j++)
-                if (mark[i][j] == '#') SetPixel(hdc, x + 3 + j, y + 3 + i, C_DARK);
+        int i;
+        for (i = 0; i < 11; i++) {
+            SetPixel(hdc, x + 1 + i, y + 1 + i, C_WINTEXT);
+            SetPixel(hdc, x + 11 - i, y + 1 + i, C_WINTEXT);
+        }
     }
 }
 
@@ -531,10 +569,10 @@ static void DrawControls(HDC hdc)
 {
     unsigned i;
     char buf[32];
-    Etched(hdc, &rcBaseGroup);
-    Etched(hdc, &rcWordGroup);
-    Etched(hdc, &rcInvGroup);
-    SetTextColor(hdc, C_DARK);
+    GroupFrame(hdc, &rcBaseGroup);
+    GroupFrame(hdc, &rcWordGroup);
+    GroupFrame(hdc, &rcInvGroup);
+    SetTextColor(hdc, C_BTNTEXT);
     for (i = 0; i < NCTL; i++) {
         const Control *c = &sciControls[i];
         int size = c->type == CTL_RADIO ? 12 : 13;
@@ -669,8 +707,6 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 
     switch (msg) {
     case WM_INITDIALOG: {
-        RECT lr;
-        HWND list = GetDlgItem(dlg, IDC_STATLIST);
         g_statBox = dlg;
         LoadStr(IDS_STAT_TITLE, buf, sizeof(buf));
         SetWindowText(dlg, buf);
@@ -678,13 +714,6 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         SetDlgStr(dlg, IDC_LOAD, IDS_STAT_LOAD);
         SetDlgStr(dlg, IDC_CD, IDS_STAT_CD);
         SetDlgStr(dlg, IDC_CAD, IDS_STAT_CAD);
-        SendDlgItemMessage(dlg, IDC_STATLIST, WM_SETFONT, (WPARAM)g_font, 0);
-        SendDlgItemMessage(dlg, IDC_STATN, WM_SETFONT, (WPARAM)g_font, 0);
-        /* leave 2 px around the list for the Windows 95 sunken border */
-        GetWindowRect(list, &lr);
-        ScreenToClient(dlg, (POINT FAR *)&lr.left);
-        ScreenToClient(dlg, (POINT FAR *)&lr.right);
-        MoveWindow(list, lr.left + 2, lr.top + 2, lr.right - lr.left - 4, lr.bottom - lr.top - 4, FALSE);
         return TRUE;
     }
 
@@ -694,19 +723,6 @@ BOOL CALLBACK __export StatProc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             return (BOOL)g_brFace;
         }
         return FALSE;
-
-    case WM_PAINT: {
-        PAINTSTRUCT ps;
-        RECT lr;
-        HDC hdc = BeginPaint(dlg, &ps);
-        GetWindowRect(GetDlgItem(dlg, IDC_STATLIST), &lr);
-        ScreenToClient(dlg, (POINT FAR *)&lr.left);
-        ScreenToClient(dlg, (POINT FAR *)&lr.right);
-        InflateRect(&lr, 2, 2);
-        Sunken(hdc, &lr, C_LIGHT);
-        EndPaint(dlg, &ps);
-        return TRUE;
-    }
 
     case WM_COMMAND:
         sel = (int)SendDlgItemMessage(dlg, IDC_STATLIST, LB_GETCURSEL, 0, 0);
@@ -1047,6 +1063,12 @@ LRESULT CALLBACK __export WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         }
         return 0;
 
+    case WM_SYSCOLORCHANGE:      /* the user changed the color scheme */
+        LoadSysColors();
+        InvalidateRect(hwnd, NULL, FALSE);
+        if (StatBoxOpen()) InvalidateRect(g_statBox, NULL, TRUE);
+        return 0;
+
     case WM_INITMENUPOPUP:
         /* Gray out Paste when there is no text on the clipboard */
         EnableMenuItem((HMENU)wp, IDM_PASTE, MF_BYCOMMAND |
@@ -1096,17 +1118,14 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
     /* Fixed pixel sizes (8 pt / 10 pt at 96 dpi) so the layout does not
      * depend on the display driver's font size setting. */
     g_font = CreateFont(-11, 0, 0, 0,
-                        FW_NORMAL, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                        FW_BOLD, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
                         CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                         VARIABLE_PITCH | FF_SWISS, "MS Sans Serif");
     g_btnFont = CreateFont(-13, 0, 0, 0,
                         FW_BOLD, 0, 0, 0, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
                         CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                         VARIABLE_PITCH | FF_SWISS, "MS Sans Serif");
-    g_brFace = CreateSolidBrush(C_FACE);
-    g_brShadow = CreateSolidBrush(C_SHADOW);
-    g_brLight = CreateSolidBrush(C_LIGHT);
-    g_brDark = CreateSolidBrush(C_DARK);
+    LoadSysColors();
 
     r.left = 0; r.top = 0; r.right = STD_W; r.bottom = STD_H;
     AdjustWindowRect(&r, style, TRUE);
@@ -1134,12 +1153,7 @@ int PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR cmd, int show)
     if (g_statProc) FreeProcInstance(g_statProc);
     DeleteObject(g_font);
     DeleteObject(g_btnFont);
-    DeleteObject(g_brFace);
-    DeleteObject(g_brShadow);
-    DeleteObject(g_brLight);
-    DeleteObject(g_brDark);
-    if (g_radioBmp[0]) DeleteObject(g_radioBmp[0]);
-    if (g_radioBmp[1]) DeleteObject(g_radioBmp[1]);
+    FreeSysColors();
     if (g_extIcon) DestroyIcon(g_extIcon);
     return m.wParam;
 }

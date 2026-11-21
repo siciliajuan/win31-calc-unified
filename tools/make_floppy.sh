@@ -6,12 +6,13 @@ cd "$(dirname "$0")/.."
 OUT=build/dist
 rm -rf "$OUT" && mkdir -p "$OUT/disk"
 cp build/SETUP.EXE build/UNINSTAL.EXE "$OUT/disk/"
-cp build/CALC.EXE "$OUT/disk/CALC95.EXE"
+cp build/CALC.EXE "$OUT/disk/CALCNEW.EXE"
 
-IMG="$OUT/CALC95.IMG"
-mformat -C -f 1440 -v CALC95 -i "$IMG" ::
-mcopy -i "$IMG" "$OUT/disk/SETUP.EXE" "$OUT/disk/UNINSTAL.EXE" "$OUT/disk/CALC95.EXE" ::
+VERSION=${VERSION:-2.0}
+IMG="$OUT/win31-calc-unified-$VERSION.img"
+mformat -C -f 1440 -v CALCUNIFIED -i "$IMG" ::
+mcopy -i "$IMG" "$OUT/disk/SETUP.EXE" "$OUT/disk/UNINSTAL.EXE" "$OUT/disk/CALCNEW.EXE" ::
 mdir -i "$IMG" ::
 
-(cd "$OUT/disk" && zip -q -9 ../calc95-disk.zip SETUP.EXE UNINSTAL.EXE CALC95.EXE)
+(cd "$OUT/disk" && zip -q -9 "../win31-calc-unified-$VERSION.zip" SETUP.EXE UNINSTAL.EXE CALCNEW.EXE)
 ls -l "$OUT"

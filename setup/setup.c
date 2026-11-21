@@ -1,12 +1,12 @@
 /*
- * setup.c - Installer and uninstaller for win31-calc95 (Win16, Windows 3.1).
+ * setup.c - Installer and uninstaller for win31-calc-unified (Win16, Windows 3.1).
  * Built twice: SETUP.EXE (default) and UNINSTAL.EXE (-DUNINSTALL).
  * Both run from the floppy and are not copied to the system.
  *
  * Install:
  *   1. <WINDOWS>\CALC.EXE (original) is renamed to CALC31.EXE.
  *      If CALC.EXE is already ours (re-install), it is only updated.
- *   2. CALC95.EXE from the floppy is copied as <WINDOWS>\CALC.EXE.
+ *   2. CALCNEW.EXE from the floppy is copied as <WINDOWS>\CALC.EXE.
  *   3. The Program Manager item that runs CALC.EXE is replaced in place
  *      (DDE ReplaceItem keeps its position) with the icon of CALC31.EXE.
  *   4. Everything needed to undo it is recorded in WIN.INI [Calc95].
@@ -293,7 +293,7 @@ static int Install(void)
     PmItem it;
 
     GetModuleFileName(g_hInst, src, sizeof(src));
-    strcpy(strrchr(src, '\\') + 1, "CALC95.EXE");
+    strcpy(strrchr(src, '\\') + 1, "CALCNEW.EXE");
     if (!FileExists(src)) { Msg(IDS_NO_SOURCE, MB_OK | MB_ICONSTOP); return 0; }
 
     WinPath(dst, "CALC.EXE");
